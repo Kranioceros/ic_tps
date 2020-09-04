@@ -6,7 +6,8 @@ from utils import extender
 
 def main():
     # Leemos archivo de entrenamiento
-    datos = np.genfromtxt("icgtp1datos/OR_trn.csv", dtype=float, delimiter=',')
+    datos = np.genfromtxt("tp1/icgtp1datos/OR_trn.csv",
+                          dtype=float, delimiter=',')
     # Agregamos una entrada constante -1 para el sesgo
     datos_ext = extender(datos)
 
@@ -24,7 +25,8 @@ def main():
     plt.show()
 
     # Leemos archivo de prueba
-    datos = np.genfromtxt("icgtp1datos/OR_tst.csv", dtype=float, delimiter=',')
+    datos = np.genfromtxt("tp1/icgtp1datos/OR_tst.csv",
+                          dtype=float, delimiter=',')
     datos_ext = extender(datos[:, :-1])
 
     # Evaluamos la salida
