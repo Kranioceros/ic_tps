@@ -25,11 +25,12 @@ class Neurona:
             self.w[i] = (b-a) * self.rng.random() + a
 
     # Entrena la neurona, devolviendo el el error final y el numero de epocas usadas
+    # Si se activa la opcion `guardar_pesos`, tambien devuelve los pesos para cada paso
     # `datos_entr` contiene entradas y sus salidas correspondientes (entrada extendida)
     # `max_epocas` define el numero maximo que se pueden repetir todos los patrones
     # `umbral_err` es el error relativo umbral a utilizar para finalizar el algoritmo
     # `coef_apren` es el coeficiente de aprendizaje
-    def entrenar(self, datos_entr, max_epocas=500, umbral_err=0.05, coef_apren=0.1):
+    def entrenar(self, datos_entr, max_epocas=500, umbral_err=0.05, coef_apren=0.1, guardar_pesos=False):
         (nro_patrones, entrada_ext) = datos_entr.shape
 
         if entrada_ext != self.dimension+1:
@@ -41,18 +42,21 @@ class Neurona:
         # Salida deseada: la ultima columna
         yd = datos_entr[:, -1]
 
-        # Inicializamos epoca y error
+        # Inicializamos epoca, error y pesos
         epoca = 0
         err = np.ones((nro_patrones, 1)) * umbral_err * 10
+        pesos = []
         while epoca < max_epocas and any(err > umbral_err):
             for i in range(nro_patrones):
+                if guardar_pesos:
+                    pesos.append(list(self.w))
                 # Calculamos la salida de la neurona y su error
                 yi = self.fn_activacion(self.w @ x[i, :])
                 err[i] = abs((yd[i] - yi) / yd[i])
                 self.w += (coef_apren / 2) * (yd[i] - yi) * x[i, :]
             epoca += 1
 
-        return (err, epoca)
+        return (err, epoca, pesos)
 
     # Estimula la neurona con la entrada x y devuelve su salida
     def evaluar(self, x):
