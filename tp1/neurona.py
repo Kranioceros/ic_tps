@@ -66,3 +66,11 @@ class Neurona:
             return
 
         return np.vectorize(self.fn_activacion)(x @ self.w)
+
+    # Toma `x` como entrada de la neurona e `yd` como salida deseada de la misma
+    # Devuelve la salida de la neurona `y` y tambien su error `err`
+
+    def probar(self, x, yd):
+        y = self.evaluar(x)
+        err = yd - y
+        return (y, err)
