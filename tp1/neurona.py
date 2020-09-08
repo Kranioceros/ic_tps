@@ -60,8 +60,7 @@ class Neurona:
 
     # Estimula la neurona con la entrada x y devuelve su salida
     def evaluar(self, x):
-        (_filas, cols) = x.shape
-        if cols != self.dimension:
+        if x.ndim > 1 or x.size != self.dimension:
             print("La dimension de x no corresponde con la neurona")
             return
 
