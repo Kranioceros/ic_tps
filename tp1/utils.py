@@ -60,3 +60,13 @@ def particionar(m, n, p, random=False):
         particiones.append((idx_entr, idx_prueba))
 
     return particiones
+
+# Toma una matriz `m` de dimension M x N, donde cada fila es una entrada de `f`
+# La funcion utiliza las particiones `part` para evaluar `f` para cada particion
+# `part` es un vector de indices de filas
+# Devuelve un vector columna con el resultado de aplicar `f` a la particion
+
+
+def part_apply(m, part, f):
+    # Aplicamos la funcion a las filas correspondientes de la particion actual
+    return np.apply_along_axis(f, 1, m[part, :])
