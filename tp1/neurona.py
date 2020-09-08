@@ -74,3 +74,17 @@ class Neurona:
         y = self.evaluar(x)
         err = yd - y
         return (y, err)
+
+    # Realiza un grafico de la recta de la neurona (si usa 3 entradas)
+    # Si `show` es True, se llama a show al final de la funcion
+    # Si `pause` es True, se llama a pause al final de la funcion, con tiempo `time`
+    def graficar3(self, show=True, pause=False, time=3):
+        w = self.w
+        plt.axline((0, w[0]/w[2]), slope=-w[1]/w[2])
+        plt.axis([-1.1, 1.1, -1.1, 1.1])
+        if show:
+            plt.show()
+        elif pause:
+            plt.pause(time)
+        else:
+            pass
