@@ -3,21 +3,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import signo
+from utils import signo, part_apply
 
 # Recibe opcionalmente `dim`, que define el numero de entradas de la neurona,
 # INCLUYENDO el sesgo. Inicializa en cero los w.
 # Recibe opcionalmente `fn_activ`, que define la funcion de activacion de la neurona.
 # Por defecto es la funcion signo
+# `aleatorizar` define el intervalo inicial de los pesos (por defecto no se inicializan)
 
 
 class Neurona:
-    def __init__(self, dim=0, fn_activ=signo):
+    def __init__(self, dim=0, fn_activ=signo, aleatorizar=()):
         self.dimension = dim
         self.fn_activacion = fn_activ
         self.w = np.zeros(dim)
         # Inicializamos generador de numeros aleatorios
         self.rng = np.random.default_rng()
+        if aleatorizar != ():
+            (a, b) = aleatorizar
+            self.aleatorizar(a, b)
 
     # Genera un vector de pesos con cada peso en (a, b), con b > a
     def aleatorizar(self, a, b):
@@ -30,7 +34,7 @@ class Neurona:
     # `max_epocas` define el numero maximo que se pueden repetir todos los patrones
     # `umbral_err` es el error relativo umbral a utilizar para finalizar el algoritmo
     # `coef_apren` es el coeficiente de aprendizaje
-    def entrenar(self, datos_entr, max_epocas=500, umbral_err=0.05, coef_apren=0.1, guardar_pesos=False):
+    def entrenar(self, datos_entr, max_epocas=100, umbral_err=0.05, coef_apren=0.1, guardar_pesos=False):
         (nro_patrones, entrada_ext) = datos_entr.shape
 
         if entrada_ext != self.dimension+1:
@@ -87,3 +91,40 @@ class Neurona:
             plt.pause(time)
         else:
             pass
+
+# Toma un set de datos y una particion de los mismos
+# A partir de eso entrena una neurona y calcula el error promedio para cada particion
+# `m` es la matriz de datos (contiene la entrada extendida y la salida deseada)
+# `parts` es un arreglos de tuplas de la forma:
+#  [(idx_entr, idx_prueba)]
+#  donde idx_entr e idx_prueba son vectores de indices de filas de m
+# `init_opts` es un diccionario con las opciones para inicializa la neurona (argumentos de constructor)
+# `entr_opts` es un diccionario con las opciones para entrnar la neurona (argumentos de entrenamiento)
+# Devuelve la neurona entrenada de cada particion junto con su error promedio
+
+
+def validacion_cruzada(m, parts, init_opts, entr_opts):
+    # Entradas de las neuronas (todas menos la ultima columna)
+    x = m[:, :-1]
+    # Salidas deseadas de las neurona (la ultima columna)
+    yd = m[:, -1]
+    # Inicializamos arreglos de neuronas y vector de errores
+    neuronas = []
+    errores = []
+
+    for (part_entr, part_prueba) in parts:
+        # Creamos una neurona y aleatorizamos sus pesos
+        an = Neurona(**init_opts)
+        # La entrenamos con la particion de entrenamiento
+        an.entrenar(m[part_entr, :], **entr_opts)
+        # La evaluamos con la particion de pruebas
+        y = part_apply(x, part_prueba, an.evaluar)
+        # Calculamos el error
+        err = np.average(np.abs(yd[part_prueba] - y))
+        # Guardamos la neurona y el error
+        neuronas.append(an)
+        errores.append(err)
+        # Graficamos
+        # an.graficar3(show=True)
+
+    return (neuronas, np.array(errores))
