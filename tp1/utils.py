@@ -31,6 +31,12 @@ def extender(m):
     col0 = np.ones((fil, 1)) * (-1)
     return np.hstack((col0, m))
 
+# Funcion sigmoidea simetrica para utilizar en perceptrones multicapa. Opera sobre un vector
+
+
+def sig(x):
+    return 2*np.reciprocal(1 + np.exp(-x)) - 1
+
 # Crea `n` particiones con un porcentaje `p` de patrones de entrenamiento y 1-`p` de pruebas
 # `p` es un valor entre 0 y 1
 # La entrada de datos es `m`
