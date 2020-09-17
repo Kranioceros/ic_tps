@@ -24,12 +24,22 @@ def rampa(alfa, a):
     return f
 
 # Extiende una matriz de m x n con una columna al inicio cuyos valores son -1
+# Si es un vector, simplemente agrega un -1 al principio
+# `dim` define si se agrega una columna con -1 o una fila (la dimension)
 
 
-def extender(m):
-    (fil, _col) = m.shape
-    col0 = np.ones((fil, 1)) * (-1)
-    return np.hstack((col0, m))
+def extender(x, dim=1):
+    if x.ndim == 1:
+        return np.concatenate([-np.ones(1), x])
+    elif dim == 1:
+        (fil, _cols) = x.shape
+        col0 = np.ones((fil, 1)) * (-1)
+        return np.hstack((col0, x))
+    else:
+        (_fil, cols) = x.shape
+        fil0 = np.ones((1, cols)) * (-1)
+        return np.vstack((fil0, x))
+
 
 # Funcion sigmoidea simetrica para utilizar en perceptrones multicapa. Opera sobre un vector
 
@@ -48,7 +58,7 @@ def sig(x):
 
 
 def particionar(m, n, p, random=False):
-    (fils, cols) = m.shape
+    (fils, _cols) = m.shape
     particiones = []
 
     for _i in range(n):
