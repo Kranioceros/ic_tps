@@ -85,62 +85,10 @@ def part_apply(m, part, f):
     # Aplicamos la funcion a las filas correspondientes de la particion actual
     return np.apply_along_axis(f, 1, m[part, :])
 
-# Toma pesos de una neurona, datos de entrenamiento y visualiza de forma animada
-# como ajusta sus parametros. Para eso crea una grafica, la anima y la cierra.
-# Funciona para casos 2D (neurona con 2 entradas)
-# `pesos` es una matriz con los pesos de las neuronas en cada paso de entrenamiento
-# `max_pasos` es el numero de pasos antes de terminar la animacion
-# `t` es el numero de segundos entre paso y paso
-# `titulo` titulo de la grafica
-# `labels` es una tupla con los labels del eje x e y
-
-
-def visualizar2D(pesos, datos_entr, max_pasos=1000, t=0.0001, titulo=None, labels=('x', 'y')):
-    (_fil, col) = datos_entr.shape
-
-    if len(pesos[0]) != 3 or col != 3:
-        print("Error de dimensiones en visualizar")
-
-    n = min(len(pesos), len(datos_entr), max_pasos)
-
-    # Crea una figura y le agrega un axes
-    fig = plt.figure()
-    ax = fig.add_subplot()
-
-    for i in range(n):
-        # Titulo y labels
-        if titulo is not None:
-            ax.set_title(titulo)
-        (xlabel, ylabel) = labels
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-
-        # Punto
-        w = pesos[i]
-        x1 = datos_entr[i, 0]
-        x2 = datos_entr[i, 1]
-
-        if datos_entr[i, 2] == 1:
-            ax.scatter(x1, x2, c='b')
-        else:
-            ax.scatter(x1, x2, c='r')
-
-        # Recta
-        ax.axline((0, w[0]/w[2]), slope=-w[1]/w[2])
-
-        # Configuracion
-        configurar_grilla(ax)
-
-        # Mostramos, esperamos y borramos
-        plt.pause(t)
-        plt.cla()
-
-    # Cerramos la figura
-    plt.close(fig)
-
-
 # Configura el axes para que sea una grilla cuadrada de lado `tam`
 # Agrega ejes y se asegura que se mantenga cuadrada
+
+
 def configurar_grilla(ax, tam=1.3):
     ax.set_xlim(-1.3, 1.3)
     ax.set_ylim(-1.3, 1.3)

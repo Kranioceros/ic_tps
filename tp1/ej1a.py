@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from neurona import Neurona
-from utils import extender, configurar_grilla, visualizar2D
+from neurona import Neurona, visualizar2D
+from utils import extender, configurar_grilla
 
 
 def main():
