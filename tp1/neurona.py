@@ -38,7 +38,8 @@ class Neurona:
         (nro_patrones, entrada_ext) = datos_entr.shape
 
         if entrada_ext != self.dimension+1:
-            print("La dimension de datos_entr no corresponde con la neurona")
+            print(
+                f'La dimension de datos_entr({datos_entr.shape}) no corresponde con la neurona({self.dimension})')
             return
 
         # Entrada: todas las columnas menos la ultima
@@ -65,10 +66,11 @@ class Neurona:
     # Estimula la neurona con la entrada x y devuelve su salida
     def evaluar(self, x):
         if x.ndim > 1 or x.size != self.dimension:
-            print("La dimension de x no corresponde con la neurona")
+            print(
+                f'La dimension de x({x.shape}) no corresponde con la neurona({self.dimension})')
             return
-
-        return np.vectorize(self.fn_activacion)(x @ self.w)
+        y = self.fn_activacion(x @ self.w)
+        return y
 
     # Toma `x` como entrada de la neurona e `yd` como salida deseada de la misma
     # Devuelve la salida de la neurona `y` y tambien su error `err`
