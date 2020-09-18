@@ -16,15 +16,8 @@ def main():
     nn.ws[0] = np.array([[-1, 1, 1], [1, 1, 1]])
     nn.ws[1] = np.array([[1, 1, -1]])
 
-    # Pesos neuronas de la capa 0
-    n00 = nn.ws[0][0, :]
-    n01 = nn.ws[0][1, :]
-    # Pesos neurona de la capa 1
-    n10 = nn.ws[1][0, :]
-
     # Graficamos pesos de las tres neuronas
-    graficar_pesos(n00, n01, n10, axs[0, 0],
-                   'Pesos de neurona preentrenada')
+    graficar_pesos(nn, axs[0, 0], 'Pesos de neurona preentrenada')
 
     # Cargamos los datos de testeo de xor
     datos = np.genfromtxt("tp1/icgtp1datos/XOR_tst.csv",
@@ -38,10 +31,16 @@ def main():
 
     plt.show()
 
-# Toma pesos de las tres neuronas, un Axes y grafica las rectas que definen los pesos
+# Toma la red neuronal, un Axes y grafica las rectas que definen los pesos
 
 
-def graficar_pesos(n00, n01, n10, ax, title=None):
+def graficar_pesos(nn, ax, title=None):
+    # Pesos neuronas de la capa 0
+    n00 = nn.ws[0][0, :]
+    n01 = nn.ws[0][1, :]
+    # Pesos neurona de la capa 1
+    n10 = nn.ws[1][0, :]
+
     # Graficamos rectas de las neuronas
     ax.axline((0, n00[0]/n00[2]), slope=-n00[1] / n00[2], c='r', label="n00")
     ax.axline((0, n01[0]/n01[2]), slope=-n01[1] / n01[2], c='g', label="n01")
