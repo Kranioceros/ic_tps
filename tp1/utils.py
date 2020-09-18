@@ -3,11 +3,8 @@ import numpy as np
 # Funciones de activacion
 
 
-def signo(n):
-    if n < 0:
-        return -1
-    else:
-        return 1
+def signo(v):
+    return (v <= 0) * (-1) + (v > 0) * 1
 
 # `alfa` es la pendiente de la rampa, `a` define los tramos de la funcion
 # Devuelve una funcion f de un solo parametro con alfa y a
