@@ -22,6 +22,16 @@ def rampa(alfa, a):
             return 1
     return f
 
+# Derivadas de funciones de activacion
+
+# La funcion const devuelve una matriz o vector de igual dimension cuyos
+# valores son todos `a`. Es util para el metodo de Widrow-Hoff, donde se
+# asume que la funcion de activacion es simplemente la activacion lineal
+
+
+def const(v, a=1):
+    return v * 0 + a
+
 # Extiende una matriz de m x n con una columna al inicio cuyos valores son -1
 # Si es un vector, simplemente agrega un -1 al principio
 # `dim` define si se agrega una columna con -1 o una fila (la dimension)
