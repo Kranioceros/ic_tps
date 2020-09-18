@@ -47,18 +47,22 @@ class Neurona:
         # Salida deseada: la ultima columna
         yd = datos_entr[:, -1]
 
-        # Inicializamos epoca, error y pesos
+        # Inicializamos epoca y pesos
         epoca = 0
-        err = np.ones((nro_patrones, 1)) * umbral_err * 10
         pesos = []
-        while epoca < max_epocas and any(err > umbral_err):
+        err = umbral_err * 10
+        while epoca < max_epocas and err > umbral_err:
+            # Ajustamos pesos
             for i in range(nro_patrones):
                 if guardar_pesos:
                     pesos.append(list(self.w))
                 # Calculamos la salida de la neurona y su error
                 yi = self.fn_activacion(self.w @ x[i, :])
-                err[i] = abs((yd[i] - yi) / yd[i])
                 self.w += (coef_apren / 2) * (yd[i] - yi) * x[i, :]
+            # Calculamos error de la epoca
+            v = np.apply_along_axis(lambda x: self.w @ x, 1, x)
+            y = self.fn_activacion(v)
+            err = np.average(np.abs(y - yd))
             epoca += 1
 
         return (err, epoca, pesos)
