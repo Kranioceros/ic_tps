@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 # Funciones de activacion
 
@@ -92,7 +93,12 @@ def part_apply(m, part, f):
 def configurar_grilla(ax, tam=1.3):
     ax.set_xlim(-1.3, 1.3)
     ax.set_ylim(-1.3, 1.3)
-    ax.axhline(y=0, c='grey')
-    ax.axvline(x=0, c='grey', lw=1)
-    ax.set_aspect('equal', adjustable='box')
-    ax.grid(ls='dashed')
+
+    # Configuraciones especificas para 2D o 3D
+    if isinstance(ax, Axes3D):
+        ax.set_zlim(-1.3, 1.3)
+    else:
+        ax.axhline(y=0, c='grey')
+        ax.axvline(x=0, c='grey', lw=1)
+        ax.grid(ls='dashed')
+        ax.set_aspect('equal', adjustable='box')
