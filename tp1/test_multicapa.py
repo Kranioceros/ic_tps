@@ -1,7 +1,7 @@
 from multicapa import RedMulticapa
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import configurar_grilla
+from utils import configurar_grilla, sig, dsig, signo, const
 
 
 def main():
@@ -10,24 +10,40 @@ def main():
 
     # Creamos una red neuronal que resuelva el problema XOR
     # 2 entradas (x1 y x2), 2 neuronas en la capa de entrada (n00 y n01), 1 neurona en la capa de salida (n10)
-    nn = RedMulticapa([2, 2, 1])
+    nn = RedMulticapa([2, 2, 1], activ=signo)
 
     # Asignamos pesos a las capas
     nn.ws[0] = np.array([[-1, 1, 1], [1, 1, 1]])
     nn.ws[1] = np.array([[1, 1, -1]])
 
     # Graficamos pesos de las tres neuronas
-    graficar_pesos(nn, axs[0, 0], 'Pesos de neurona preentrenada')
+    graficar_pesos(nn, axs[0, 0], 'Pesos de red construida')
 
     # Cargamos los datos de testeo de xor
-    datos = np.genfromtxt("tp1/icgtp1datos/XOR_tst.csv",
-                          dtype=float, delimiter=',')
+    xor_tst = np.genfromtxt("tp1/icgtp1datos/XOR_tst.csv",
+                            dtype=float, delimiter=',')
 
-    x = datos[:, :-1]       # Entrada, un patron por fila
+    x = xor_tst[:, :-1]       # Entrada, un patron por fila
 
     # Clasificamos
     graficar_clasificacion(
-        nn, x, axs[1, 0], 'Clasificacion de la red preentrenada')
+        nn, x, axs[1, 0], 'Clasificacion de red construida')
+
+    # Cargamos los datos de entrenamiento de xor
+    xor_trn = np.genfromtxt("tp1/icgtp1datos/XOR_trn.csv",
+                            dtype=float, delimiter=',')
+
+    # Creamos una red identica pero la entrenamos de cero
+    nn = RedMulticapa([2, 2, 1], interv_rand=(-0.5, 0.5))
+
+    nn.entrenar(xor_trn, max_epocas=5, coef_apren=0.2)
+
+    # Graficamos pesos de las tres neuronas
+    graficar_pesos(nn, axs[0, 1], 'Pesos de red entrenada')
+
+    # Clasificamos
+    graficar_clasificacion(
+        nn, x, axs[1, 1], 'Clasificacion de red entrenada')
 
     plt.show()
 
@@ -60,10 +76,12 @@ def graficar_pesos(nn, ax, title=None):
 
 def graficar_clasificacion(nn, x, ax, title=None):
     # Evaluamos la red para cada patron de prueba
-    (fils, _cols) = x.shape
-    y = np.zeros(fils)
-    for i in range(fils):
-        y[i] = nn.evaluar(x[i])
+    #(fils, _cols) = x.shape
+    #y = np.zeros(fils)
+    # for i in range(fils):
+    #y[i] = nn.evaluar(x[i])
+
+    y = np.apply_along_axis(nn.evaluar, 1, x).flatten()
 
     # Graficamos patrones
     idx_true = y > 0

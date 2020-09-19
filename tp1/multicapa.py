@@ -2,7 +2,7 @@
 # matplotlib para graficar
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import extender, signo, const
+from utils import extender, sig, dsig
 
 # Este archivo define una clase para una red neuronal multicapa, con la funcion
 # sigmoidea como funcion de activacion, entrenable con el metodo de retropropagacion
@@ -18,8 +18,8 @@ class RedMulticapa:
     # que especifique el intervalo del cual llenar aleatoriamente los pesos
     # `activ` es la funcion de activacion de las neuronas
     # `deriv` es la derivada de la funcion de activacion, utilizada en el entrenamiento
-    # Por defecto, el metodo de entrenamiento es el de Widrow-Hoff con la funcion signo
-    def __init__(self, arq, interv_rand=None, activ=signo, deriv=const):
+    # Por defecto, el metodo de entrenamiento es con la funcion sigmoidea y su derivada
+    def __init__(self, arq, interv_rand=None, activ=sig, deriv=dsig):
         if len(arq) < 2:
             print(
                 "Error: arq debe tener al menos 2 elementos (entradas de la red y una capa)")
@@ -66,11 +66,16 @@ class RedMulticapa:
 
     # Evalua la red neuronal para un patron x dado
     # `x`: vector 1D con el patron, SIN el sesgo
-    def evaluar(self, x):
+    # `por_capa`: si se activa, devuelve la salida de cada capa (incluyendo la entrada)
+    # Devuelve un vector 1D con la salida, o si `por_capa` esta activado, una lista de vectores 1D
+    def evaluar(self, x, por_capa=False):
         if x.ndim != 1:
             print("evaluar: error de dimension en `x`")
+        # Vector con las salidas y activacion lineal de cada capa
+        ys = []
         # Salida de la capa actual (convertimos en matriz de Nx1)
-        y = x[:, np.newaxis]
+        y = x
+        ys.append(y)
         # Propagamos hacia adelante
         for w in self.ws:
             # Extendemos la salida de la capa anterior para el sesgo
@@ -78,9 +83,90 @@ class RedMulticapa:
             # Calculamos activacion lineal y salida de la capa
             v = w @ y_ext
             y = self.activ(v)
-        return y
+            ys.append(y)
+
+        if(por_capa):
+            return ys
+        else:
+            return ys[-1]
 
     # Entrena la red neuronal con los patrones completos y sus respectivas salidas en `datos_entr`
-    def entrenar(self, datos_entr, max_epocas=100, umbral_err=0.05, coef_apren=0.1):
-        # TODO
-        pass
+    def entrenar(self, datos_entr, max_epocas=10, umbral_err=0.1, coef_apren=0.1):
+        (nro_patrones, cols) = datos_entr.shape
+        if cols != self.ws[0][0, :].size:
+            print(
+                f'entrenar: error de dimension, entrada con {cols} columnas y red con {self.ws[0][0,:].size} entradas')
+
+        x = datos_entr[:, :-1]
+        yd = datos_entr[:, -1]
+        yd = yd.reshape(-1, 1)       # Convertimos en matriz de Nx1
+
+        print("### ENTRENAR ###")
+
+        # Por cada epoca
+        for _epoca in range(max_epocas):
+            # Por cada patron
+            for i in range(nro_patrones):
+                print("### COMIENZA PATRON ###")
+                # Evaluamos la salida de cada capa para el patron actual
+                ys = self.evaluar(x[i], por_capa=True)
+
+                # Inicializamos el error retropagado. Para la ultima capa, se usa
+                # el error de la red. A partir de `er` se calcula el ajuste de los
+                # pesos en cada capa
+                er = (yd[i] - ys[-1]).reshape(-1, 1)
+
+                # Algunos calculos tienen anotaciones para entender las dimensiones de las
+                # matrices y vectores. Aca esta la referencia:
+                # `N2`: Nro. neuronas capa actual, `N1`: Nro. neuronas capa anterior
+
+                # Ajustamos los pesos de cada capa en base al `er` provisto por la
+                # siguiente capa
+                # `w`  : Pesos de la capa actual    (N2xN1+1)
+                # `y`  : Salida de la capa actual   (N2x1)
+                # `y_a`: Salida de la capa anterior (N1x1)
+                for w, y, y_a in zip(reversed(self.ws), reversed(ys), reversed(ys[:-1])):
+                    # Transformamos y e y_a en vectores columna
+                    y = y.reshape(-1, 1)
+                    y_a = y_a.reshape(-1, 1)
+
+                    # print(f'yd[i]: {yd[i]}')
+                    print(f'y: {y}, shape = {y.shape}')
+                    print(f'y_a: {y_a}, shape = {y_a.shape}')
+                    print(f'er: {er}')
+                    print(f'w: {w}')
+
+                    # Calculamos el gradiente de error local instantaneo
+                    # (N2x1) * (N2x1) = (N2x1)
+                    el = er*self.deriv(y)
+
+                    print(f'el: {el}, shape = {el.shape}')
+
+                    # dw es el ajuste de los pesos de la capa actual
+                    #  alfa * (N2x1) @ (1xN1+1) = (N2x1) @ (1xN1+1) = (N2xN1+1)
+                    dw = coef_apren * el @ extender(y_a.T)
+
+                    print(f'dw: {dw}, shape = {dw.shape}')
+                    # print(f'w: {w}, shape = {w.shape}')
+
+                    # Ajustamos los pesos
+                    # (N2xN1+1) - (N2xN1+1) = (N2xN1+1)
+                    w += dw
+
+                    # Calculamos el error propagado hacia la capa anterior
+                    # (N1xN2) @ (N2x1) = (N1x1)
+                    er = w[:, 1:].T @ el
+
+                print("### TERMINA PATRON ###")
+
+            # Calculamos el error y evaluamos si se corta o no
+            y = np.apply_along_axis(lambda p: self.evaluar(p).T, 1, x)
+            #print(f'y: {y}, y.shape={y.shape}')
+            #print(f'yd: {yd}')
+            #print(f'(yd - y) / yd: {(yd - y) / yd}')
+            err = np.average(np.abs((yd - y) / yd))
+
+            print(f'Error de epoca: {err}')
+
+            if err < umbral_err:
+                break
