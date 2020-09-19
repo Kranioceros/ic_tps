@@ -22,39 +22,45 @@ def rampa(alfa, a):
             return 1
     return f
 
-# Derivadas de funciones de activacion
-
-# La funcion const devuelve una matriz o vector de igual dimension cuyos
-# valores son todos `a`. Es util para el metodo de Widrow-Hoff, donde se
-# asume que la funcion de activacion es simplemente la activacion lineal
-
-
-def const(v, a=1):
-    return v * 0 + a
-
-# Extiende una matriz de m x n con una columna al inicio cuyos valores son -1
-# Si es un vector, simplemente agrega un -1 al principio
-# `dim` define si se agrega una columna con -1 o una fila (la dimension)
-
-
-def extender(x, dim=1):
-    if x.ndim == 1:
-        return np.concatenate([-np.ones(1), x])
-    elif dim == 1:
-        (fil, _cols) = x.shape
-        col0 = np.ones((fil, 1)) * (-1)
-        return np.hstack((col0, x))
-    else:
-        (_fil, cols) = x.shape
-        fil0 = np.ones((1, cols)) * (-1)
-        return np.vstack((fil0, x))
-
-
 # Funcion sigmoidea simetrica para utilizar en perceptrones multicapa. Opera sobre un vector
 
 
 def sig(x):
     return 2*np.reciprocal(1 + np.exp(-x)) - 1
+
+
+# Derivadas de funciones de activacion
+
+# La funcion const devuelve una matriz o vector de igual dimension cuyos
+# valores son todos multiplicados por `a`. Es util para el metodo de Widrow-Hoff,
+# donde se asume que la salida de la neurona es solo la activacion lineal
+
+
+def const(v, a=1):
+    return v * a
+
+
+def dsig(x):
+    return (1 + x)*(1 - x)
+
+# Extiende una matriz de m x n con una columna al inicio cuyos valores son -1
+# Si es un vector, simplemente agrega un -1 al principio
+# `dim` define si se agrega una columna con -1 o una fila (la dimension)
+# `a` es el valor a colocar en la columna
+
+
+def extender(x, dim=1, a=-1):
+    if x.ndim == 1:
+        return np.concatenate([a*np.ones(1), x])
+    elif dim == 1:
+        (fil, _cols) = x.shape
+        col0 = a*np.ones((fil, 1))
+        return np.hstack((col0, x))
+    else:
+        (_fil, cols) = x.shape
+        fil0 = a*np.ones((1, cols))
+        return np.vstack((fil0, x))
+
 
 # Crea `n` particiones con un porcentaje `p` de patrones de entrenamiento y 1-`p` de pruebas
 # `p` es un valor entre 0 y 1
