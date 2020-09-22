@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 # Funciones de activacion
 
@@ -80,3 +81,12 @@ def particionar(m, n, p, random=False):
 def part_apply(m, part, f):
     # Aplicamos la funcion a las filas correspondientes de la particion actual
     return np.apply_along_axis(f, 1, m[part, :])
+
+def convert_to_one_dimension(x):
+    x1_prom = np.mean(x[:,0])
+    x2_prom = np.mean(x[:,1])
+    x_new = []
+
+    for _i in range(len(x[:,0])):
+        x_new.append(math.sqrt((x1_prom-x[_i][0])**2+(x2_prom-x[_i][1])**2))
+    return x_new
