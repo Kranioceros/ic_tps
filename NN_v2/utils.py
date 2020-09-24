@@ -5,10 +5,7 @@ import math
 
 
 def signo(n):
-    if n < 0:
-        return -1
-    else:
-        return 1
+    return (n<=0)*(-1) + (n>0)*1
 
 def dsigno(x):
     return 1
@@ -85,8 +82,9 @@ def part_apply(m, part, f):
 def convert_to_one_dimension(x):
     x1_prom = np.mean(x[:,0])
     x2_prom = np.mean(x[:,1])
+    y = x[:,-1]
     x_new = []
 
     for _i in range(len(x[:,0])):
-        x_new.append(math.sqrt((x1_prom-x[_i][0])**2+(x2_prom-x[_i][1])**2))
-    return x_new
+        x_new.append([math.sqrt((x1_prom-x[_i][0])**2+(x2_prom-x[_i][1])**2),y[_i]])
+    return np.array(x_new)

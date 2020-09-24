@@ -55,12 +55,12 @@ class NN:
     # x -> los datos completos leídos del archivo (supone que trae cada patron en una fila, y que el último elemento de la misma es la etiqueta del patrón)
     # max_epochs -> cantidad máxima de épocas para entrenar la red
     # tol_error -> tolerancia de error medio entre cada época.
-    def Train(self, x, max_epochs=5, tol_error=.1, alfa = 0.5):
+    def Train(self, x, max_epochs=5, tol_error=.1, alfa = 0):
 
         #Matriz de patrones sin etiquetas
-        m_inputs = x[:,:-1]
+        m_inputs = x[:,:-3]
         #Vector de etiquetas de los patrones
-        v_labels = x[:, -1]
+        v_labels = x[:, -3]
         #Delta W de la iteracion anterior para utilizar el termino de momento
         DWAnt = []
         for w in self.v_weights:
