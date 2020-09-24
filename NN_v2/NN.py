@@ -55,14 +55,21 @@ class NN:
     # x -> los datos completos leídos del archivo (supone que trae cada patron en una fila, y que el último elemento de la misma es la etiqueta del patrón)
     # max_epochs -> cantidad máxima de épocas para entrenar la red
     # tol_error -> tolerancia de error medio entre cada época.
-    def Train(self, x, max_epochs=5, tol_error=.1):
+    def Train(self, x, max_epochs=5, tol_error=.1, alfa = 0.5):
 
         #Matriz de patrones sin etiquetas
         m_inputs = x[:,:-1]
         #Vector de etiquetas de los patrones
         v_labels = x[:, -1]
+        #Delta W de la iteracion anterior para utilizar el termino de momento
+        DWAnt = []
+        for w in self.v_weights:
+            DWAnt.append(np.zeros(w.shape))
+
+        #DWAnt = np.zeros(self.v_weights.shape)
 
         #Por cada época
+        epocas_para_convergencia = 0
         for _k in range(max_epochs):
             #Vector de errores cometidos en cada patrón
             v_error = []
@@ -98,7 +105,10 @@ class NN:
 
                 #Ajusto pesos y biases (desde la primera oculta)
                 for _j in range(1,len(self.v_bias)):
-                    self.v_weights[_j] += self.learning_rate*((outputs[_j-1]).T@v_ei[_j])
+
+                    DWAux = self.learning_rate*((outputs[_j-1]).T@v_ei[_j]) + alfa*DWAnt[_j]
+                    self.v_weights[_j] += DWAux
+                    DWAnt[_j] = DWAux
                     self.v_bias[_j] += self.learning_rate*v_ei[_j]
 
                 #Obligar a que sea entendido como una matriz de una fila
@@ -106,19 +116,26 @@ class NN:
 
                 #Actualizo pesos y biases de la primera capa (se hace aparte porque usa los inputs)
                     #TODO: se podrían poner los inputs en outputs[0] para no tener que hacerlo aparte
-                self.v_weights[0] += self.learning_rate*(inputs_array.T@v_ei[0])
+
+                DWAux = self.learning_rate*(inputs_array.T@v_ei[0]) + alfa*DWAnt[0]
+                self.v_weights[0] += DWAux
+                DWAnt[0] = DWAux
                 self.v_bias[0] += self.learning_rate*v_ei[0]
 
                 #Error del patrón actual
-                v_error.append(np.abs(self.Test(inputs)-targets))
+                v_error.append(np.abs(signo(self.Test(inputs))-targets))
             
             #Error medio de la época actual
             mean_error = np.mean(v_error)
             #print("Error medio epoch ", _k, ": ", mean_error)
 
+            epocas_para_convergencia = _k
+
             #Si el error medio es menor que la tolerancia fijada termina el entrenamiento
             if(mean_error<tol_error):
-                break
+                return epocas_para_convergencia
+            
+        return epocas_para_convergencia
 
 
     #Prueba de la red
