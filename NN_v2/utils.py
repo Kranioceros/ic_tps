@@ -49,6 +49,30 @@ def extender(m):
 # Si random es True, los vectores de indices son elegidos aleatoriamente
 
 
+def particionar_k_out(m, k):
+    (fils, cols) = m.shape
+    particiones = []
+
+    # Cantidad de particiones
+    n = int(np.floor(fils/k))
+
+    # Idx contiene los indices de todas las filas
+    idx = np.arange(fils)
+    
+    rango = 0
+
+    for _i in range(n):
+        # Agregamos los indices al arreglo de particiones
+        idx_prueba = idx[rango:k+rango]
+        # Diferencia entre conjuntos (set) y devuelto como array
+        idx_entr = np.array(list(set(idx)-set(idx_prueba)))
+
+        particiones.append((idx_entr, idx_prueba))
+
+        rango += k
+
+    return particiones
+
 def particionar(m, n, p, random=False):
     (fils, cols) = m.shape
     particiones = []
@@ -88,3 +112,9 @@ def convert_to_one_dimension(x):
     for _i in range(len(x[:,0])):
         x_new.append([math.sqrt((x1_prom-x[_i][0])**2+(x2_prom-x[_i][1])**2),y[_i]])
     return np.array(x_new)
+
+def WinnerTakesAll(x):
+    max_idx = np.argmax(x)
+    v_x = np.ones(len(x))*-1
+    v_x[max_idx] = 1
+    return v_x

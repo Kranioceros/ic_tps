@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import sigmoid, dsigmoid, signo, dsigno
+from utils import sigmoid, dsigmoid, signo, dsigno, WinnerTakesAll
 
 #Clase que modela una Red Neuronal (Neural Network -> NN)
 #Lo único necesario es determinar la arquitectura (arq), donde cada elemento de la lista representa la cantidad de neuronas en cada capa
@@ -55,12 +55,13 @@ class NN:
     # x -> los datos completos leídos del archivo (supone que trae cada patron en una fila, y que el último elemento de la misma es la etiqueta del patrón)
     # max_epochs -> cantidad máxima de épocas para entrenar la red
     # tol_error -> tolerancia de error medio entre cada época.
-    def Train(self, x, max_epochs=5, tol_error=.1, alfa = 0):
+    def Train(self, x, max_epochs=5, tol_error=.1, alfa = 0, tam_output = 1):
 
         #Matriz de patrones sin etiquetas
-        m_inputs = x[:,:-3]
+        m_inputs = x[:,:-tam_output]
         #Vector de etiquetas de los patrones
-        v_labels = x[:, -3]
+        v_labels = x[:, -tam_output:]
+
         #Delta W de la iteracion anterior para utilizar el termino de momento
         DWAnt = []
         for w in self.v_weights:
@@ -78,8 +79,8 @@ class NN:
                 #Patrón actual
                 inputs = m_inputs[_i, :]
                 #Etiquetas del patrón actual
-                targets = v_labels[_i]
-
+                targets = v_labels[_i,:]
+                
                 #Propagación hacia adelante obteniendo el error cometido en cada capa
                 outputs = self.FeedForward(inputs)
                 
@@ -123,8 +124,15 @@ class NN:
                 self.v_bias[0] += self.learning_rate*v_ei[0]
 
                 #Error del patrón actual
-                v_error.append(np.abs(signo(self.Test(inputs))-targets))
-            
+                if(tam_output==1):
+                    v_error.append(np.abs(signo(self.Test(inputs))-targets))
+                else:
+                    error = np.abs(WinnerTakesAll((self.Test(inputs)[0][:]))-targets)
+                    if(sum(error)!=0):
+                        v_error.append(1)
+                    else:
+                        v_error.append(0)
+
             #Error medio de la época actual
             mean_error = np.mean(v_error)
             #print("Error medio epoch ", _k, ": ", mean_error)
@@ -143,15 +151,8 @@ class NN:
     def Test(self, inputs):
         #Propgación hacia adelante
         outputs = self.FeedForward(inputs)
-        #Devuelvo el error de la última capa
-        wta_output = []#self.WinnerTakesAll(outputs[-1])
+
         return outputs[-1]
         
-
-    def WinnerTakesAll(self, x):
-        max_idx = np.argmax(x)
-        v_x = np.ones((1,len(x)))*-1
-        v_x[max_idx] = 1
-        return v_x
 
 
