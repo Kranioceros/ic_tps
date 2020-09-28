@@ -1,16 +1,19 @@
 from NN import NN
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import particionar_k_out, convert_to_one_dimension, WinnerTakesAll, particionar
+from utils import particionar_k_out, convert_to_one_dimension, WinnerTakesAll, particionar, Normalizar
 
 def main():
     nn = NN([4,5,4,3], learning_rate=.2)#nn = NN([4,4,3], learning_rate=.1)
     datos = np.genfromtxt("icgtp1datos/irisbin.csv", dtype=float, delimiter=',')
 
+    datos_norm = Normalizar(datos)
+    print(datos_norm)
+
     patrones_test = 25
     particiones = particionar_k_out(datos, patrones_test)
 
-    datos_x = datos[:,:-3]
+    datos_x = datos_norm[:,:-3]
     datos_labels = datos[:,-3:]
 
     v_errores_particiones = []
@@ -21,7 +24,7 @@ def main():
     v_c3_best = []
 
     for _i in range(len(particiones)):
-        epocas_convergencia_iteracion = nn.Train(datos[particiones[_i][0]], max_epochs=100, tol_error=.1, alfa=0.5, tam_output=3)
+        epocas_convergencia_iteracion = nn.Train(datos_norm[particiones[_i][0]], max_epochs=100, tol_error=.1, alfa=0.5, tam_output=3)
 
         outputs_particiones = []
         
@@ -67,14 +70,15 @@ def main():
     print(f"Media {np.mean(v_errores_particiones)}")
     print(f"STD {np.std(v_errores_particiones)}")
 
-    plt.scatter(datos_x[v_c1_best,2], datos_x[v_c1_best,3], color=(1,0,0))
-    plt.scatter(datos_x[v_c2_best,2], datos_x[v_c2_best,3], color=(0,0,1))
-    plt.scatter(datos_x[v_c3_best,2], datos_x[v_c3_best,3], color=(0,1,0))
+    datos_plt = datos[:, :-3]
+    plt.scatter(datos_plt[v_c1_best,2], datos_plt[v_c1_best,3], color=(1,0,0))
+    plt.scatter(datos_plt[v_c2_best,2], datos_plt[v_c2_best,3], color=(0,0,1))
+    plt.scatter(datos_plt[v_c3_best,2], datos_plt[v_c3_best,3], color=(0,1,0))
     plt.show()
 
-    plt.scatter(datos_x[v_c1_best,0], datos_x[v_c1_best,1], color=(1,0,0))
-    plt.scatter(datos_x[v_c2_best,0], datos_x[v_c2_best,1], color=(0,0,1))
-    plt.scatter(datos_x[v_c3_best,0], datos_x[v_c3_best,1], color=(0,1,0))
+    plt.scatter(datos_plt[v_c1_best,0], datos_plt[v_c1_best,1], color=(1,0,0))
+    plt.scatter(datos_plt[v_c2_best,0], datos_plt[v_c2_best,1], color=(0,0,1))
+    plt.scatter(datos_plt[v_c3_best,0], datos_plt[v_c3_best,1], color=(0,1,0))
     plt.show()
 
 

@@ -12,14 +12,21 @@ def main():
     v_labels = datos[:, -1]
     particiones = particionar(datos, 5, .8, True)
 
-    
+    min_error = -1
+    v_true_best = []
+    v_false_best = []
+    v_fn_best = []
+    v_fp_best = []
+
     for _i in range(len(particiones)):
         v_true = []
         v_false = []
         v_false_positive = []
         v_false_negative = []
+
         epocas_convergencia_iteracion = nn.Train(datos[particiones[_i][0]], max_epochs=150, tol_error=.25, alfa=0.5)
-        print(f"Epocas para convergencia en particion {_i+1}: {epocas_convergencia_iteracion+1}")  #max_epochs = 150    
+        print(f"Epocas para convergencia en particion {_i+1}: {epocas_convergencia_iteracion+1}") 
+
         outputs_particiones = []
         for _p in particiones[_i][1]:
             outputs_particiones.append(nn.Test(m_inputs[_p])) 
@@ -49,11 +56,18 @@ def main():
         print(f"Falsos positivos: {len(v_false_positive)} | Falsos negativos: {len(v_false_negative)}.")
         print("\n")
 
+        if(min_error == -1 or errorPart < min_error):
+            min_error = errorPart
+            v_true_best = v_true
+            v_false_best = v_false
+            v_fn_best = v_false_negative
+            v_fp_best = v_false_positive
 
-    plt.scatter(m_inputs[v_true,0], m_inputs[v_true,1], color=(1,0,0))
-    plt.scatter(m_inputs[v_false,0], m_inputs[v_false,1], color=(0,0,1))
-    plt.scatter(m_inputs[v_false_positive,0], m_inputs[v_false_positive,1], color=(0,1,0))
-    plt.scatter(m_inputs[v_false_negative,0], m_inputs[v_false_negative,1], color=(1,1,0))
+
+    plt.scatter(m_inputs[v_true_best,0], m_inputs[v_true_best,1], color=(1,0,0))
+    plt.scatter(m_inputs[v_false_best,0], m_inputs[v_false_best,1], color=(0,0,1))
+    plt.scatter(m_inputs[v_fp_best,0], m_inputs[v_fp_best,1], color=(0,1,0))
+    plt.scatter(m_inputs[v_fn_best,0], m_inputs[v_fn_best,1], color=(1,1,0))
     plt.show()
 
 if __name__ == "__main__":

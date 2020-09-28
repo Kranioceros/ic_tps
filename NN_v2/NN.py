@@ -106,7 +106,7 @@ class NN:
 
                 #Ajusto pesos y biases (desde la primera oculta)
                 for _j in range(1,len(self.v_bias)):
-
+                    #Delta de los pesos (si el momento(alfa) es 0, el último término queda nulo)
                     DWAux = self.learning_rate*((outputs[_j-1]).T@v_ei[_j]) + alfa*DWAnt[_j]
                     self.v_weights[_j] += DWAux
                     DWAnt[_j] = DWAux
@@ -125,9 +125,10 @@ class NN:
 
                 #Error del patrón actual
                 if(tam_output==1):
-                    v_error.append(np.abs(signo(self.Test(inputs))-targets))
+                    error = np.abs(signo(self.Test(inputs))-targets)/2
+                    v_error.append(error)
                 else:
-                    error = np.abs(WinnerTakesAll((self.Test(inputs)[0][:]))-targets)
+                    error = np.abs(WinnerTakesAll(self.Test(inputs)[0][:]) - targets)
                     if(sum(error)!=0):
                         v_error.append(1)
                     else:
@@ -153,6 +154,3 @@ class NN:
         outputs = self.FeedForward(inputs)
 
         return outputs[-1]
-        
-
-

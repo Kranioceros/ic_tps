@@ -29,7 +29,7 @@ def sigmoid(x):
 
 #Derivada sigmoide simétrica
 def dsigmoid(x):
-    return (1+x)*(1-x)
+    return (1+x)*(1-x)*0.5
 
 # Extiende una matriz de m x n con una columna al inicio cuyos valores son -1
 
@@ -118,3 +118,38 @@ def WinnerTakesAll(x):
     v_x = np.ones(len(x))*-1
     v_x[max_idx] = 1
     return v_x
+
+def Calcular_Area(x):
+    datos_area = np.zeros((x.shape[0],5))
+
+    for _p in range(x.shape[0]):
+        datos_area[_p, 0] = x[_p, 0]*x[_p, 1]
+        datos_area[_p, 1] = x[_p, 2]*x[_p, 3]
+        datos_area[_p, 2] = x[_p, 4]
+        datos_area[_p, 3] = x[_p, 5]
+        datos_area[_p, 4] = x[_p, 6]
+    
+    return datos_area
+
+#Promedia alto y ancho de cefalo y petalo
+def Promediar(x):
+    datos_prom = np.zeros((x.shape[0],5))
+
+    for _p in range(x.shape[0]):
+        datos_prom[_p, 0] = x[_p, 0]+x[_p, 2]/2
+        datos_prom[_p, 1] = x[_p, 1]+x[_p, 3]/2
+        datos_prom[_p, 2] = x[_p, 4]
+        datos_prom[_p, 3] = x[_p, 5]
+        datos_prom[_p, 4] = x[_p, 6]
+
+    return datos_prom
+
+def Normalizar(x):
+    datos_norm = np.zeros(x.shape)
+
+    for _p in range(x.shape[0]):
+        max_idx = np.argmax(x[_p,:])
+        datos_norm[_p, :-3] = x[_p, :-3]/x[_p, max_idx]
+        datos_norm[_p, -3:] = x[_p, -3:]
+
+    return datos_norm

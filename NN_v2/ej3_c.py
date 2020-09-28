@@ -8,7 +8,7 @@ def main():
     datos = np.genfromtxt("icgtp1datos/concentlite.csv", dtype=float, delimiter=',')
     v_datos = convert_to_one_dimension(datos) #datos en una dimensión
     particiones = particionar(v_datos, 5, .8, True)
-    print(particiones)
+    
     v_datos_x = v_datos[:,0]
     v_datos_y = v_datos[:,-1]
     
