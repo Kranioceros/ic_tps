@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from utils import particionar, convert_to_one_dimension
 
 def main():
-    nn = NN([1,1], learning_rate=.1)
+    #nn = NN([1,1], learning_rate=.1)
     datos = np.genfromtxt("icgtp1datos/concentlite.csv", dtype=float, delimiter=',')
     v_datos = convert_to_one_dimension(datos) #datos en una dimensión
     particiones = particionar(v_datos, 5, .8, True)
@@ -13,6 +13,7 @@ def main():
     v_datos_y = v_datos[:,-1]
     
     for _i in range(len(particiones)):
+        nn = NN([1,1], learning_rate=.1)
         v_true = []
         v_false = []
         v_false_positive = []
@@ -50,10 +51,12 @@ def main():
         print("\n")
 
 
-    plt.scatter(datos[v_true,0], datos[v_true,1], color=(1,0,0))
-    plt.scatter(datos[v_false,0], datos[v_false,1], color=(0,0,1))
-    plt.scatter(datos[v_false_positive,0], datos[v_false_positive,1], color=(0,1,0))
-    plt.scatter(datos[v_false_negative,0], datos[v_false_negative,1], color=(1,1,0))
+    plt.scatter(datos[v_true,0], datos[v_true,1], color=(1,0,0),label="Verdadero")
+    plt.scatter(datos[v_false,0], datos[v_false,1], color=(0,0,1),label="Falso")
+    plt.scatter(datos[v_false_positive,0], datos[v_false_positive,1], color=(0,1,0),label="Falso Positivo")
+    plt.scatter(datos[v_false_negative,0], datos[v_false_negative,1], color=(1,1,0),label="Falso Negativo")
+    plt.legend(loc="lower right", title="", frameon=False)
+    plt.title("Concentlite con una dimensión")
     plt.show()
 
 

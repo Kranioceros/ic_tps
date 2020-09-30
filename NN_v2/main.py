@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from utils import particionar
 
 def main():
-    nn = NN([2,3,2,1], learning_rate=.1) # nn = NN([2,3,2,1], learning_rate=.2) 
+    #nn = NN([2,3,2,1], learning_rate=.1) # nn = NN([2,3,2,1], learning_rate=.2) 
     datos = np.genfromtxt("icgtp1datos/concentlite.csv", dtype=float, delimiter=',')
     #Matriz de patrones sin etiquetas
     m_inputs = datos[:,:-1]
@@ -19,12 +19,13 @@ def main():
     v_fp_best = []
 
     for _i in range(len(particiones)):
+        nn = NN([2,5,4,1], learning_rate=.1) # nn = NN([2,3,2,1], learning_rate=.2) 
         v_true = []
         v_false = []
         v_false_positive = []
         v_false_negative = []
 
-        epocas_convergencia_iteracion = nn.Train(datos[particiones[_i][0]], max_epochs=150, tol_error=.25, alfa=0.5)
+        epocas_convergencia_iteracion = nn.Train(datos[particiones[_i][0]], max_epochs=300, tol_error=.25, alfa=0)
         print(f"Epocas para convergencia en particion {_i+1}: {epocas_convergencia_iteracion+1}") 
 
         outputs_particiones = []
@@ -64,10 +65,12 @@ def main():
             v_fp_best = v_false_positive
 
 
-    plt.scatter(m_inputs[v_true_best,0], m_inputs[v_true_best,1], color=(1,0,0))
-    plt.scatter(m_inputs[v_false_best,0], m_inputs[v_false_best,1], color=(0,0,1))
-    plt.scatter(m_inputs[v_fp_best,0], m_inputs[v_fp_best,1], color=(0,1,0))
-    plt.scatter(m_inputs[v_fn_best,0], m_inputs[v_fn_best,1], color=(1,1,0))
+    plt.scatter(m_inputs[v_true_best,0], m_inputs[v_true_best,1], color=(1,0,0), label="Verdadero")
+    plt.scatter(m_inputs[v_false_best,0], m_inputs[v_false_best,1], color=(0,0,1), label="Falso")
+    plt.scatter(m_inputs[v_fp_best,0], m_inputs[v_fp_best,1], color=(0,1,0), label="Falso Positivo")
+    plt.scatter(m_inputs[v_fn_best,0], m_inputs[v_fn_best,1], color=(1,1,0), label="Falso Negativo")
+    plt.legend(loc="lower right", title="", frameon=False)
+    plt.title("Concentlite")
     plt.show()
 
 if __name__ == "__main__":

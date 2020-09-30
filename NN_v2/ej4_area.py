@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from utils import particionar_k_out, convert_to_one_dimension, WinnerTakesAll, particionar, Calcular_Area
 
 def main():
-    nn = NN([2,5,4,3], learning_rate=.2)#nn = NN([4,4,3], learning_rate=.1)
+    #nn = NN([2,5,4,3], learning_rate=.2)#nn = NN([4,4,3], learning_rate=.1)
     datos = np.genfromtxt("icgtp1datos/irisbin.csv", dtype=float, delimiter=',')
 
     datos_area = Calcular_Area(datos)
@@ -23,6 +23,7 @@ def main():
     v_c3_best = []
 
     for _i in range(len(particiones)):
+        nn = NN([2,5,4,3], learning_rate=.2)#nn = NN([4,4,3], learning_rate=.1)
         epocas_convergencia_iteracion = nn.Train(datos_area[particiones[_i][0]], max_epochs=100, tol_error=.1, alfa=0.5, tam_output=3)
 
         outputs_particiones = []
