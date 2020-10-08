@@ -58,7 +58,9 @@ def particionar_k_out(m, k):
 
     # Idx contiene los indices de todas las filas
     idx = np.arange(fils)
-    
+
+    np.random.shuffle(idx)
+
     rango = 0
 
     for _i in range(n):

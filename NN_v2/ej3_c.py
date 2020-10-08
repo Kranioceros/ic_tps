@@ -18,7 +18,7 @@ def main():
         v_false = []
         v_false_positive = []
         v_false_negative = []
-        epocas_convergencia_iteracion = nn.Train(v_datos[particiones[_i][0]], max_epochs=150, tol_error=.25, alfa=0)
+        epocas_convergencia_iteracion = nn.Train(v_datos[particiones[_i][0]], max_epochs=150, tol_error=.1, alfa=0)
         print(f"Epocas para convergencia en particion {_i+1}: {epocas_convergencia_iteracion+1}")  #max_epochs = 150    
         outputs_particiones = []
         

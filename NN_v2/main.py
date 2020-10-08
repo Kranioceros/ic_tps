@@ -19,7 +19,7 @@ def main():
     v_fp_best = []
 
     for _i in range(len(particiones)):
-        nn = NN([2,5,4,1], learning_rate=.1) # nn = NN([2,3,2,1], learning_rate=.2) 
+        nn = NN([2,5,4,1], learning_rate=.2) # nn = NN([2,3,2,1], learning_rate=.2) 
         v_true = []
         v_false = []
         v_false_positive = []

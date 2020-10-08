@@ -7,7 +7,7 @@ def main():
     #nn = NN([4,5,4,3], learning_rate=.2)#nn = NN([4,4,3], learning_rate=.1)
     datos = np.genfromtxt("icgtp1datos/irisbin.csv", dtype=float, delimiter=',')
 
-    patrones_test = 25
+    patrones_test = 1
     particiones = particionar_k_out(datos, patrones_test)
 
     datos_x = datos[:,:-3]
@@ -21,7 +21,7 @@ def main():
     v_c3_best = []
 
     for _i in range(len(particiones)):
-        nn = NN([4,5,4,3], learning_rate=.2)#nn = NN([4,4,3], learning_rate=.1)
+        nn = NN([4,3,2,3], learning_rate=.1)#nn = NN([4,4,3], learning_rate=.1)
         epocas_convergencia_iteracion = nn.Train(datos[particiones[_i][0]], max_epochs=100, tol_error=.1, alfa=0.5, tam_output=3)
 
         outputs_particiones = []
