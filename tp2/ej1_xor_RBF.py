@@ -16,9 +16,9 @@ from NN import NN
 
 
 def main():
-    nnMultiCapa = NN([6,1], learning_rate=.1)
+    neuronasRadiales = 4
+    nnMultiCapa = NN([neuronasRadiales,1], learning_rate=.1)
 
-    neuronasRadiales = 6
     datos = np.genfromtxt("datos/XOR_trn.csv", dtype=float, delimiter=',')
     datosTest = np.genfromtxt("datos/XOR_tst.csv", dtype=float, delimiter=',')
 
@@ -30,11 +30,11 @@ def main():
     idx = np.arange(m_inputs.shape[0])
     dimension = m_inputs.shape[1]
 
-    medias = []
+    medias = np.zeros((neuronasRadiales, 2))
     
     np.random.shuffle(idx)
     for i in range(neuronasRadiales):
-        medias.append(m_inputs[idx[i]])
+        medias[i,:] = m_inputs[idx[i]]
 
 
     asignaciones_ant = [1]
@@ -50,7 +50,7 @@ def main():
             min_idx = np.argmin(distanciasPatronMedias)
             asignaciones.append(min_idx) #este vector me dice para cada patron, que media le corresponde
         
-        for idx_media in range(len(medias)):
+        for idx_media in range(medias.shape[0]):
             
             #patronesMediaI = [p for i,p in enumerate(asignaciones) if i==idx_media] #ver q pasa si no encuentra nada
             patronesMediaI = []
@@ -60,9 +60,15 @@ def main():
                     patronesMediaI.append(i)
 
             m_inputs_media = m_inputs[patronesMediaI] 
-            x1_prom = np.mean(m_inputs_media[:,0])
-            x2_prom = np.mean(m_inputs_media[:,1])
-            medias[idx_media] = [x1_prom, x2_prom]
+
+            x1_prom = 0
+            x2_prom = 0
+            if(len(m_inputs_media[:,0])!=0):
+                x1_prom = np.mean(m_inputs_media[:,0])
+            if(len(m_inputs_media[:,0])!=0):
+                x2_prom = np.mean(m_inputs_media[:,1])
+            
+            medias[idx_media,:] = [x1_prom, x2_prom]
 
         #print(asignaciones)
 
@@ -72,19 +78,23 @@ def main():
         for idx_m,m in enumerate(medias):
             m_inputs_perceptron[idx_p,idx_m] = utils.gaussiana(p,m,1)
 
-    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels, max_epochs=300, tol_error=.25)
+    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels, max_epochs=300, tol_error=.15)
 
+    #TERMINA ENTRENAMIENTO
     #------------------------------------------------------------------------------------------------------------------------
+    #TESTEO
 
+    #Feed fodward capa radial
     m_inputs_test = np.ones((datosTest.shape[0],neuronasRadiales))
     for idx_p_test,p_test in enumerate(datosTest[:,:-1]):
         for idx_m,m in enumerate(medias):
             m_inputs_test[idx_p_test,idx_m] = utils.gaussiana(p_test,m,1)
 
-    resultados =[]
-    print(f"Matriz de patrones de test: {m_inputs_test}")
-    for p_test in m_inputs_test:
-        resultados.append(nnMultiCapa.Test(p_test)[0,0]) #ojo iris
+    #Feed fodward perceptrones simples
+    resultados = np.zeros(datosTest[:,-1:].shape)
+    for idx_p, p_test in enumerate(m_inputs_test):
+        resultados[idx_p]=nnMultiCapa.Test(p_test)[0,0]
+
     errores = (resultados - datosTest[:,-1:])**2 
     print("ERROR: " , np.mean(errores)/2)
 
@@ -96,11 +106,20 @@ def main():
         else:
             v_false.append(i)
 
-    
+
     plt.scatter(datosTest[v_true,0], datosTest[v_true,1], color=(1,0,0), label="Verdadero")
     plt.scatter(datosTest[v_false,0], datosTest[v_false,1], color=(0,0,1), label="Falso")
-    plt.legend(loc="lower right", title="", frameon=False)
-    plt.title("XOR")
+
+    plot_circles = True
+    if(plot_circles):
+        for m in medias:
+            circle = plt.Circle((m[0], m[1]), 1, fill=False, edgecolor=(0,0,0), linewidth='1')
+            plt.gca().add_patch(circle)
+    else:
+        plt.scatter(medias[:,0], medias[:,1], color=(0,0,0), label="Centroides")
+
+
+    plt.title("XOR RBF")
     plt.show() 
 
 

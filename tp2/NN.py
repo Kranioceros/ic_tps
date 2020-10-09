@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import sigmoid, dsigmoid, signo, dsigno, WinnerTakesAll
+from utils import sigmoid, dsigmoid, signo, dsigno, WinnerTakesAll, none
 
 #Clase que modela una Red Neuronal (Neural Network -> NN)
 #Lo único necesario es determinar la arquitectura (arq), donde cada elemento de la lista representa la cantidad de neuronas en cada capa
@@ -8,7 +8,7 @@ from utils import sigmoid, dsigmoid, signo, dsigno, WinnerTakesAll
         #TODO: CONTROLAR QUE LA DIMENSION DE 'arq' SEA AL MENOS DE 2
     
 class NN:
-    def __init__(self, arq=list, learning_rate=.3):
+    def __init__(self, arq=list, learning_rate=.3, activation=signo, dactivation=dsigno):
         self.learning_rate = learning_rate
 
         #Cantidad de neuronas de entrada
@@ -17,9 +17,9 @@ class NN:
         self.output_nodes = arq[-1]
         
         #Función de activación
-        self.f_activation = signo
+        self.f_activation = activation
         #Derivada de funcion de activación
-        self.f_dactivation = dsigno
+        self.f_dactivation = dactivation
 
         #Vector con los bias de cada capa
         self.v_bias = []
@@ -40,6 +40,7 @@ class NN:
     def FeedForward(self, inputs):
         outputs = []
         #Obligar a que sea entendido como una matriz de una fila
+        
         inputs = inputs.reshape(1,len(inputs))
         #Salida de la primera capa
         outputs.append(self.f_activation(inputs@self.v_weights[0] + self.v_bias[0]))
@@ -76,7 +77,7 @@ class NN:
                 #Error en la salida final de la red
                 error_output = targets - outputs[-1]
                 inputs = inputs.reshape(len(inputs),1)
-                
+
                 for w in self.v_weights:
                     w += self.learning_rate * inputs @ error_output 
                 
@@ -85,7 +86,10 @@ class NN:
 
                 #Error del patrón actual
                 if(self.output_nodes==1):
-                    error = np.abs(signo(self.Test(inputs))-targets)/2
+                    if(self.f_activation==none):
+                        error = np.abs(self.Test(inputs)-targets)
+                    else:
+                        error = np.abs(signo(self.Test(inputs))-targets)/2
                     v_error.append(error)
                 else:
                     error = np.abs(WinnerTakesAll(self.Test(inputs)[0][:]) - targets)

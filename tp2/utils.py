@@ -158,3 +158,13 @@ def gaussiana(x,media,sigma):
     dist = x-media
     distCuad = np.dot(dist,dist)
     return np.exp(-(distCuad)/(2*(sigma**2)))
+
+def NormalizarDatos(x):
+    max_idx = np.argmax(x)
+
+    x_norm =  x / x[max_idx]
+
+    return (x_norm, x[max_idx])
+
+def none(x):
+    return x
