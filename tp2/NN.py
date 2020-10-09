@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import sigmoid, dsigmoid, signo, dsigno, WinnerTakesAll, none
+from utils import sigmoid, dsigmoid, signo, dsigno, WinnerTakesAll, identidad
 
 #Clase que modela una Red Neuronal (Neural Network -> NN)
 #Lo único necesario es determinar la arquitectura (arq), donde cada elemento de la lista representa la cantidad de neuronas en cada capa

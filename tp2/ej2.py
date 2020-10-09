@@ -10,13 +10,13 @@ def main():
     (datos, max_dato) = utils.NormalizarDatos(datos)
 
     #Necesito dividir por 6 porque si o si necesito etiqueta
-    cant_patrones = int(datos.shape[0]/6)
+    cant_patrones = datos.shape[0]-5
 
     m_datos = np.zeros((cant_patrones,6))
     k = 0
     for i in range(cant_patrones):
         m_datos[i,:] = datos[k:k+6]
-        k+=6
+        k+=1
 
     particion = utils.particionar(m_datos, 1, .8, random=True)
 
@@ -32,7 +32,7 @@ def main():
     dimension = m_inputs_trn.shape[1]
 
     neuronasRadiales = 5
-    nnMultiCapa = NN([neuronasRadiales,1], learning_rate=.1, activation=utils.none, dactivation=utils.none)
+    nnMultiCapa = NN([neuronasRadiales,1], learning_rate=.1, activation=utils.identidad, dactivation=utils.identidad)
 
     #Matriz de medias (tantas filas como neuronas radiales, y tantas columnas como dimension del problema)
     medias = np.zeros((neuronasRadiales, dimension))

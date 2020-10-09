@@ -166,5 +166,5 @@ def NormalizarDatos(x):
 
     return (x_norm, x[max_idx])
 
-def none(x):
+def identidad(x):
     return x
