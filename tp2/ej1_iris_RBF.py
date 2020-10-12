@@ -6,7 +6,7 @@ from NN import NN
 
 
 def main():
-    neuronasRadiales = 20
+    neuronasRadiales = 5
     nnMultiCapa = NN([neuronasRadiales,3], learning_rate=.1)
 
     datos = np.genfromtxt("datos/irisbin.csv", dtype=float, delimiter=',')
@@ -122,7 +122,7 @@ def main():
     plt.scatter(m_inputs_tst[v_clase2,0], m_inputs_tst[v_clase2,1], color=(0,0,1), label="Versicolor")
     plt.scatter(m_inputs_tst[v_clase3,0], m_inputs_tst[v_clase3,1], color=(0,1,0), label="Setosa")
     
-    plot_circles = False
+    plot_circles = True
     if(plot_circles):
         for m in medias:
             circle = plt.Circle((m[0], m[1]), 1, fill=False, edgecolor=(0,0,0), linewidth='1')

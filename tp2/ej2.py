@@ -9,7 +9,6 @@ def main():
 
     (datos, max_dato) = utils.NormalizarDatos(datos)
 
-    #Necesito dividir por 6 porque si o si necesito etiqueta
     cant_patrones = datos.shape[0]-5
 
     m_datos = np.zeros((cant_patrones,6))
@@ -18,7 +17,7 @@ def main():
         m_datos[i,:] = datos[k:k+6]
         k+=1
 
-    particion = utils.particionar(m_datos, 1, .8, random=True)
+    particion = utils.particionar(m_datos, 1, .8, random=False)
 
     #Patrones y etiquetas de entrenamiento
     m_inputs_trn = m_datos[particion[0][0],:-1]
@@ -89,7 +88,7 @@ def main():
         for idx_m,m in enumerate(medias):
             m_inputs_perceptron[idx_p,idx_m] = utils.gaussiana(p,m,1)
 
-    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels_trn, max_epochs=300, tol_error=.15)
+    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels_trn, max_epochs=300, tol_error=.25)
 
     #TERMINA ENTRENAMIENTO
     #------------------------------------------------------------------------------------------------------------------------
@@ -114,6 +113,15 @@ def main():
     #Lo esperado es que la media se encuentre cerca de 1
     #Tener en cuenta que puede ser mayor a 1 (si la salida de la red es mas grande que la etiqueta) o menor a 1 (si la salida de la red es menor que la etiqueta)
     print(f"Media Eficacias: {np.mean(eficacias)}")
+
+    plt.scatter(np.arange(0,len(m_inputs_tst)), resultados[:,0]*max_dato, color=(1,0,0), label="Prediccion")
+    plt.scatter(np.arange(0,len(m_inputs_tst)), v_labels_tst[:,0]*max_dato, color=(0,1,0), label="Real")
+    
+    plt.xlabel("Día")
+    plt.ylabel("Índice MERVAL")
+    plt.legend(loc="lower right", frameon=False)
+    plt.title("Prediccion MERVAL RBF")
+    plt.show()
 
 if __name__ == "__main__":
     main()

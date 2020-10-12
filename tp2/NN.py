@@ -76,17 +76,19 @@ class NN:
                 
                 #Error en la salida final de la red
                 error_output = targets - outputs[-1]
+                print(f"target: {targets} | outputs: {outputs[-1]} | error: {error_output}")
                 inputs = inputs.reshape(len(inputs),1)
 
                 for w in self.v_weights:
-                    w += self.learning_rate * inputs @ error_output 
+                    w += self.learning_rate * (inputs@error_output)
                 
                 for b in self.v_bias:
+                    #print(f"error: {error_output} | bias: {b}")
                     b += self.learning_rate * error_output
 
                 #Error del patrón actual
                 if(self.output_nodes==1):
-                    if(self.f_activation==none):
+                    if(self.f_activation==identidad):
                         error = np.abs(self.Test(inputs)-targets)
                     else:
                         error = np.abs(signo(self.Test(inputs))-targets)/2

@@ -168,3 +168,13 @@ def NormalizarDatos(x):
 
 def identidad(x):
     return x
+
+def adaptarParametro(x, umbral1, umbral2):
+    if(x < umbral1):
+        return 1
+    elif(x < umbral2):
+        diff = umbral2 - umbral1
+        aux1 = x-umbral1
+        return 1-aux1/diff
+    else:
+        return 0.01 
