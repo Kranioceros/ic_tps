@@ -76,7 +76,7 @@ class NN:
                 
                 #Error en la salida final de la red
                 error_output = targets - outputs[-1]
-                print(f"target: {targets} | outputs: {outputs[-1]} | error: {error_output}")
+                #print(f"target: {targets} | outputs: {outputs[-1]} | error: {error_output}")
                 inputs = inputs.reshape(len(inputs),1)
 
                 for w in self.v_weights:
@@ -90,6 +90,7 @@ class NN:
                 if(self.output_nodes==1):
                     if(self.f_activation==identidad):
                         error = np.abs(self.Test(inputs)-targets)
+                        #error = ((self.Test(inputs)-targets)**2)/2
                     else:
                         error = np.abs(signo(self.Test(inputs))-targets)/2
                     v_error.append(error)
@@ -101,7 +102,9 @@ class NN:
                         v_error.append(0)
 
             #Error medio de la época actual
-            mean_error = np.mean(v_error)
+            
+            mean_error = np.mean(v_error)/v_error[np.argmax(v_error)]
+            #print("MEAN ERROR: ", mean_error)
             #print("Error medio epoch ", _k, ": ", mean_error)
 
             epocas_para_convergencia = _k

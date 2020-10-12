@@ -5,7 +5,7 @@ import utils
 
 
 def main():
-    datos = np.genfromtxt("datos/circulo.csv", dtype=float, delimiter=',')
+    datos = np.genfromtxt("datos/te.csv", dtype=float, delimiter=',')
     (nro_patrones, dim_patrones) = datos.shape
 
     # Creamos grafica
@@ -14,7 +14,7 @@ def main():
     ax.set_ylim(-1.3, 1.3)
 
     # Configuración del SOM
-    (filas_som, cols_som) = (10, 10)
+    (filas_som, cols_som) = (1, 100)
     nro_neuronas = filas_som * cols_som
     dist_entorno = 5    # Distancia de Hamming
     coef_apren = 0.2
@@ -48,29 +48,30 @@ def main():
 
     #print(f'S: {S}')
 
-    # Mezclamos patrones
+   
     idx_patrones = np.arange(nro_patrones)
-    np.random.shuffle(idx_patrones)
 
     # Centroides correspondientes a las neuronas
     C = datos[idx_patrones][:nro_neuronas, :]
 
     for epoca in range(max_epocas):
+         # Mezclamos patrones
+        np.random.shuffle(idx_patrones)
         for idx_patron, patron in enumerate(datos):
             # Graficamos
             if(plt_dinamico==True):
                 plt.cla()
                 line_segs = LineCollection(C[S], colors='r', linestyle='dotted')
                 ax.add_collection(line_segs)
-                ax.scatter(datos[:, 0], datos[:, 1])
+                ax.scatter(datos[:, 0], datos[:, 1], c=(0.7,0.7,0.7))
                 ax.scatter(C[:, 0], C[:, 1], c='r', marker='D')
                 plt.pause(0.001)
             elif(epoca==999 and idx_patron==nro_patrones-1):
                 line_segs = LineCollection(C[S], colors='r', linestyle='dotted')
                 ax.add_collection(line_segs)
-                ax.scatter(datos[:, 0], datos[:, 1])
+                ax.scatter(datos[:, 0], datos[:, 1], c=(0.7,0.7,0.7))
                 ax.scatter(C[:, 0], C[:, 1], c='r', marker='D')
-                plt.show()
+                
 
             # Desplazamiento del patron a cada centroide
             D = C - patron
@@ -89,9 +90,8 @@ def main():
 
             # Ajustamos los centroides
             C[mask] = C[mask] - coef_apren*utils.adaptarParametro(epoca, 200, 500) * D[mask]
-        print(f"epoca: {epoca}")
-    # TODO
-        # * Realizar varias epocas y realizar tres fases del algoritmo
+        #print(f"epoca: {epoca}")
+    plt.show()
 
     #plt.pause(1000)
 if __name__ == "__main__":

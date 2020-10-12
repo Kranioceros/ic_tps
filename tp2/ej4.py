@@ -66,25 +66,26 @@ def main():
 
     # Mezclamos patrones
     idx_patrones = np.arange(nro_patrones)
-    np.random.shuffle(idx_patrones)
+    
 
     # Centroides correspondientes a las neuronas
     C = datos_trn[idx_patrones][:nro_neuronas, :]
 
     for epoca in range(max_epocas):
+        np.random.shuffle(idx_patrones)
         for idx_patron, patron in enumerate(datos_trn):
             # Graficamos
             if(plt_dinamico==True):
                 plt.cla()
                 line_segs = LineCollection(C[S], colors='r', linestyle='dotted')
                 ax.add_collection(line_segs)
-                ax.scatter(datos_trn[:, 0], datos_trn[:, 1])
+                ax.scatter(datos_trn[:, 0], datos_trn[:, 1], c=(0.7,0.7,0.7))
                 ax.scatter(C[:, 0], C[:, 1], c='r', marker='D')
                 plt.pause(0.001)
             elif(epoca==999 and idx_patron==nro_patrones-1):
                 line_segs = LineCollection(C[S], colors='r', linestyle='dotted')
                 ax.add_collection(line_segs)
-                ax.scatter(datos_trn[:, 0], datos_trn[:, 1])
+                ax.scatter(datos_trn[:, 0], datos_trn[:, 1], c=(0.7,0.7,0.7))
                 ax.scatter(C[:, 0], C[:, 1], c='r', marker='D')
                 plt.show()
 
@@ -105,7 +106,7 @@ def main():
 
             # Ajustamos los centroides
             C[mask] = C[mask] - coef_apren*utils.adaptarParametro(epoca, 200, 500) * D[mask]
-        print(f"epoca: {epoca}")
+        #print(f"epoca: {epoca}")
 
     plt.close()
 
