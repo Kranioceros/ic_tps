@@ -93,6 +93,7 @@ class NN:
                         #error = ((self.Test(inputs)-targets)**2)/2
                     else:
                         error = np.abs(signo(self.Test(inputs))-targets)/2
+                        #print(f"error: {error}")
                     v_error.append(error)
                 else:
                     error = np.abs(WinnerTakesAll(self.Test(inputs)[0][:]) - targets)
@@ -103,10 +104,12 @@ class NN:
 
             #Error medio de la época actual
             maximo = np.abs(v_error[np.argmax(v_error)])
-            if(maximo == 0): maximo = 1
+            if(maximo == 0): 
+                maximo = 1
 
             mean_error = np.mean(v_error)/maximo
             #mean_error = np.mean(v_error)
+            #print(f"maximo: {maximo}")
             #print("ERROR TRN: ", mean_error)
             
             #print("MEAN ERROR: ", mean_error)

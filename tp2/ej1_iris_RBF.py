@@ -6,8 +6,8 @@ from NN import NN
 
 
 def main():
-    neuronasRadiales = 5
-    nnMultiCapa = NN([neuronasRadiales,3], learning_rate=.1)
+    neuronasRadiales = 10
+    nnMultiCapa = NN([neuronasRadiales,3], learning_rate=.3)
 
     datos = np.genfromtxt("datos/irisbin.csv", dtype=float, delimiter=',')
 
@@ -27,9 +27,15 @@ def main():
     #Matriz de medias (tantas filas como neuronas radiales, y tantas columnas como dimension del problema)
     medias = np.zeros((neuronasRadiales, dimension))
     np.random.shuffle(idx)
-    for i in range(neuronasRadiales):
-        medias[i,:] = m_inputs_trn[idx[i]]
+    #for i in range(neuronasRadiales):
+    #    medias[i,:] = m_inputs_trn[idx[i]]
 
+    #Cantidad de patrones en cada conjunto
+    porConjunto = int(m_inputs_trn.shape[0]/neuronasRadiales)
+    for i in range(neuronasRadiales):
+        start = i*porConjunto
+        end = start+porConjunto
+        medias[i,:] = np.mean(m_inputs_trn[idx[start:end]])
 
     asignaciones_ant = [1]
     asignaciones = []
@@ -53,18 +59,16 @@ def main():
 
             m_inputs_media = m_inputs_trn[patronesMediaI] 
 
-            x1_prom = 0
-            x2_prom = 0
-            x3_prom = 0
-            x4_prom = 0
-
-            if(len(m_inputs_media[:,0])!=0):
+            #Si no hubo nuevas asignaciones en este conjunto, no cambiarlo
+            if(len(patronesMediaI)==0):
+                x1_prom = medias[idx_media,0]
+                x2_prom = medias[idx_media,1]
+                x3_prom = medias[idx_media,2]
+                x4_prom = medias[idx_media,3]
+            else: #Si hubo cambios en el conjunto, recalcular media
                 x1_prom = np.mean(m_inputs_media[:,0])
-            if(len(m_inputs_media[:,1])!=0):
                 x2_prom = np.mean(m_inputs_media[:,1])
-            if(len(m_inputs_media[:,2])!=0):
                 x3_prom = np.mean(m_inputs_media[:,2])
-            if(len(m_inputs_media[:,3])!=0):
                 x4_prom = np.mean(m_inputs_media[:,3])
       
             medias[idx_media,:] = [x1_prom, x2_prom, x3_prom, x4_prom]
@@ -77,7 +81,7 @@ def main():
         for idx_m,m in enumerate(medias):
             m_inputs_perceptron[idx_p,idx_m] = utils.gaussiana(p,m,1)
 
-    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels_trn, max_epochs=300, tol_error=.15)
+    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels_trn, max_epochs=1000, tol_error=.01)
 
     #TERMINA ENTRENAMIENTO
     #------------------------------------------------------------------------------------------------------------------------
@@ -90,7 +94,6 @@ def main():
             m_inputs_test[idx_p_test,idx_m] = utils.gaussiana(p_test,m,1)
 
     #Feed fodward perceptrones simples
-    resultados = np.zeros(v_labels_tst.shape)
     errores = []
     v_clase1 = []
     v_clase2 = []

@@ -16,13 +16,13 @@ from NN import NN
 
 
 def main():
-    neuronasRadiales = 6
-    nnMultiCapa = NN([neuronasRadiales,1], learning_rate=.1)
+    neuronasRadiales = 4
+    nnMultiCapa = NN([neuronasRadiales,1], learning_rate=.3)
 
     datos = np.genfromtxt("datos/XOR_trn.csv", dtype=float, delimiter=',')
     datosTest = np.genfromtxt("datos/XOR_tst.csv", dtype=float, delimiter=',')
 
-    sigma = 1
+    sigma = .1
 
     #Matriz de patrones sin etiquetas
     m_inputs = datos[:,:-1]
@@ -35,9 +35,15 @@ def main():
     medias = np.zeros((neuronasRadiales, dimension))
     
     np.random.shuffle(idx)
-    for i in range(neuronasRadiales):
-        medias[i,:] = m_inputs[idx[i]]
+    #for i in range(neuronasRadiales):
+    #    medias[i,:] = m_inputs[idx[i]]
 
+    #Cantidad de patrones en cada conjunto
+    porConjunto = int(m_inputs.shape[0]/neuronasRadiales)
+    for i in range(neuronasRadiales):
+        start = i*porConjunto
+        end = start+porConjunto
+        medias[i,:] = np.mean(m_inputs[idx[start:end]])
 
     asignaciones_ant = [1]
     asignaciones = []
@@ -50,7 +56,9 @@ def main():
             for media in medias:
                 #distanciasPatronMedias.append([math.sqrt((media[0]-patron[0])**2+(media[1]-patron[1])**2)]) #ver para mas dimensiones
                 distanciasPatronMedias.append(np.sqrt(np.sum((media-patron)**2)))
+                #print(f"dist: {distanciasPatronMedias}")
             min_idx = np.argmin(distanciasPatronMedias)
+            #print(f"min dist: {min_idx}")
             asignaciones.append(min_idx) #este vector me dice para cada patron, que media le corresponde
         
         for idx_media in range(medias.shape[0]):
@@ -63,13 +71,15 @@ def main():
                     patronesMediaI.append(i)
 
             m_inputs_media = m_inputs[patronesMediaI] 
+            #print(f"medias: {m_inputs_media} | patrones: {patronesMediaI}")
 
-            x1_prom = 0
-            x2_prom = 0
-            if(len(m_inputs_media[:,0])!=0):
+            #Si no hubo nuevas asignaciones en este conjunto, no cambiarlo
+            if(len(patronesMediaI)==0):
+                x1_prom = medias[idx_media,0]
+                x2_prom = medias[idx_media,1]
+            else: #Si hubo cambios en el conjunto, recalcular media
                 x1_prom = np.mean(m_inputs_media[:,0])
-            if(len(m_inputs_media[:,0])!=0):
-                x2_prom = np.mean(m_inputs_media[:,1])
+                x2_prom = np.mean(m_inputs_media[:,1])                
             
             medias[idx_media,:] = [x1_prom, x2_prom]
 
@@ -81,7 +91,7 @@ def main():
         for idx_m,m in enumerate(medias):
             m_inputs_perceptron[idx_p,idx_m] = utils.gaussiana(p,m,sigma)
 
-    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels, max_epochs=600, tol_error=.15)
+    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels, max_epochs=1000, tol_error=.001)
     #print("EPOCAS convg: ", epocas_convergencia_iteracion)
 
     #TERMINA ENTRENAMIENTO
