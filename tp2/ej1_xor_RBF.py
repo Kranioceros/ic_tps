@@ -16,11 +16,13 @@ from NN import NN
 
 
 def main():
-    neuronasRadiales = 4
+    neuronasRadiales = 6
     nnMultiCapa = NN([neuronasRadiales,1], learning_rate=.1)
 
     datos = np.genfromtxt("datos/XOR_trn.csv", dtype=float, delimiter=',')
     datosTest = np.genfromtxt("datos/XOR_tst.csv", dtype=float, delimiter=',')
+
+    sigma = 1
 
     #Matriz de patrones sin etiquetas
     m_inputs = datos[:,:-1]
@@ -30,7 +32,7 @@ def main():
     idx = np.arange(m_inputs.shape[0])
     dimension = m_inputs.shape[1]
 
-    medias = np.zeros((neuronasRadiales, 2))
+    medias = np.zeros((neuronasRadiales, dimension))
     
     np.random.shuffle(idx)
     for i in range(neuronasRadiales):
@@ -46,7 +48,8 @@ def main():
         for patron in m_inputs:
             distanciasPatronMedias = []
             for media in medias:
-                distanciasPatronMedias.append([math.sqrt((media[0]-patron[0])**2+(media[1]-patron[1])**2)]) #ver para mas dimensiones
+                #distanciasPatronMedias.append([math.sqrt((media[0]-patron[0])**2+(media[1]-patron[1])**2)]) #ver para mas dimensiones
+                distanciasPatronMedias.append(np.sqrt(np.sum((media-patron)**2)))
             min_idx = np.argmin(distanciasPatronMedias)
             asignaciones.append(min_idx) #este vector me dice para cada patron, que media le corresponde
         
@@ -76,9 +79,10 @@ def main():
     m_inputs_perceptron = np.zeros((m_inputs.shape[0],neuronasRadiales))
     for idx_p,p in enumerate(m_inputs):
         for idx_m,m in enumerate(medias):
-            m_inputs_perceptron[idx_p,idx_m] = utils.gaussiana(p,m,1)
+            m_inputs_perceptron[idx_p,idx_m] = utils.gaussiana(p,m,sigma)
 
-    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels, max_epochs=300, tol_error=.15)
+    epocas_convergencia_iteracion = nnMultiCapa.Train(m_inputs_perceptron,v_labels, max_epochs=600, tol_error=.15)
+    #print("EPOCAS convg: ", epocas_convergencia_iteracion)
 
     #TERMINA ENTRENAMIENTO
     #------------------------------------------------------------------------------------------------------------------------
@@ -88,7 +92,7 @@ def main():
     m_inputs_test = np.ones((datosTest.shape[0],neuronasRadiales))
     for idx_p_test,p_test in enumerate(datosTest[:,:-1]):
         for idx_m,m in enumerate(medias):
-            m_inputs_test[idx_p_test,idx_m] = utils.gaussiana(p_test,m,1)
+            m_inputs_test[idx_p_test,idx_m] = utils.gaussiana(p_test,m,sigma)
 
     #Feed fodward perceptrones simples
     resultados = np.zeros(datosTest[:,-1:].shape)
@@ -113,7 +117,7 @@ def main():
     plot_circles = True
     if(plot_circles):
         for m in medias:
-            circle = plt.Circle((m[0], m[1]), 1, fill=False, edgecolor=(0,0,0), linewidth='1')
+            circle = plt.Circle((m[0], m[1]), sigma, fill=False, edgecolor=(0,0,0), linewidth='1')
             plt.gca().add_patch(circle)
     else:
         plt.scatter(medias[:,0], medias[:,1], color=(0,0,0), label="Centroides")

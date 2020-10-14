@@ -69,10 +69,10 @@ def main():
     
 
     # Centroides correspondientes a las neuronas
+    np.random.shuffle(idx_patrones)
     C = datos_trn[idx_patrones][:nro_neuronas, :]
 
     for epoca in range(max_epocas):
-        np.random.shuffle(idx_patrones)
         for idx_patron, patron in enumerate(datos_trn):
             # Graficamos
             if(plt_dinamico==True):

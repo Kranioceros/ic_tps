@@ -5,7 +5,7 @@ import utils
 
 
 def main():
-    datos = np.genfromtxt("datos/te.csv", dtype=float, delimiter=',')
+    datos = np.genfromtxt("datos/circulo.csv", dtype=float, delimiter=',')
     (nro_patrones, dim_patrones) = datos.shape
 
     # Creamos grafica
@@ -14,7 +14,7 @@ def main():
     ax.set_ylim(-1.3, 1.3)
 
     # Configuración del SOM
-    (filas_som, cols_som) = (1, 100)
+    (filas_som, cols_som) = (10, 10)
     nro_neuronas = filas_som * cols_som
     dist_entorno = 5    # Distancia de Hamming
     coef_apren = 0.2
@@ -52,11 +52,11 @@ def main():
     idx_patrones = np.arange(nro_patrones)
 
     # Centroides correspondientes a las neuronas
+    np.random.shuffle(idx_patrones)
     C = datos[idx_patrones][:nro_neuronas, :]
 
     for epoca in range(max_epocas):
          # Mezclamos patrones
-        np.random.shuffle(idx_patrones)
         for idx_patron, patron in enumerate(datos):
             # Graficamos
             if(plt_dinamico==True):

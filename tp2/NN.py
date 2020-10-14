@@ -102,8 +102,13 @@ class NN:
                         v_error.append(0)
 
             #Error medio de la época actual
+            maximo = np.abs(v_error[np.argmax(v_error)])
+            if(maximo == 0): maximo = 1
+
+            mean_error = np.mean(v_error)/maximo
+            #mean_error = np.mean(v_error)
+            #print("ERROR TRN: ", mean_error)
             
-            mean_error = np.mean(v_error)/v_error[np.argmax(v_error)]
             #print("MEAN ERROR: ", mean_error)
             #print("Error medio epoch ", _k, ": ", mean_error)
 
