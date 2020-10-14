@@ -80,13 +80,13 @@ def main():
                 line_segs = LineCollection(C[S], colors='r', linestyle='dotted')
                 ax.add_collection(line_segs)
                 ax.scatter(datos_trn[:, 0], datos_trn[:, 1], c=(0.7,0.7,0.7))
-                ax.scatter(C[:, 0], C[:, 1], c='r', marker='D')
+                ax.scatter(C[:, 0], C[:, 1], color='r', marker='D')
                 plt.pause(0.001)
             elif(epoca==999 and idx_patron==nro_patrones-1):
                 line_segs = LineCollection(C[S], colors='r', linestyle='dotted')
                 ax.add_collection(line_segs)
                 ax.scatter(datos_trn[:, 0], datos_trn[:, 1], c=(0.7,0.7,0.7))
-                ax.scatter(C[:, 0], C[:, 1], c='r', marker='D')
+                ax.scatter(C[:, 0], C[:, 1], color='r', marker='D')
                 plt.show()
 
             # Desplazamiento del patron a cada centroide
@@ -129,6 +129,10 @@ def main():
     
     #Test
     v_error = []
+    v_true = []
+    v_false = []
+    v_false_positive = []
+    v_false_negative = []
     for idx_patron_tst, patron_tst in enumerate(datos_tst):
 
         # Desplazamiento del patron a cada centroide
@@ -139,12 +143,34 @@ def main():
         # Buscamos el ganador y su coord. en el mapa
         idx_ganador = np.argmin(dists)
 
-        if(etiquetas_tst[idx_patron_tst] == np.argmax(etiquetas_neuronas[idx_ganador][:])):
-            v_error.append(0)
+        etiqueta_ganadora = np.argmax(etiquetas_neuronas[idx_ganador][:])
+        
+        if(etiqueta_ganadora==1):
+            if(etiqueta_ganadora == etiquetas_tst[idx_patron_tst]):
+                v_error.append(0)
+                v_true.append(idx_patron_tst)
+            else:
+                v_error.append(1)
+                v_false_positive.append(idx_patron_tst)
         else:
-            v_error.append(1)
+            if(etiqueta_ganadora == etiquetas_tst[idx_patron_tst]):
+                v_error.append(0)
+                v_false.append(idx_patron_tst)
+            else:
+                v_error.append(1)
+                v_false_negative.append(idx_patron_tst)
+
+        
 
     print(f"Media Error: {np.mean(v_error)}")
+
+    plt.scatter(datos_tst[v_true,0], datos_tst[v_true,1], color=(0,0,1), label="Clase 1")
+    plt.scatter(datos_tst[v_false,0], datos_tst[v_false,1], color=(1,0,0), label="Clase 0")
+    plt.scatter(datos_tst[v_false_negative,0], datos_tst[v_false_negative,1], color=(1,1,0), label="Falsos negativos")
+    plt.scatter(datos_tst[v_false_positive,0], datos_tst[v_false_positive,1], color=(0,1,1), label="Falsos positivos")
+    plt.legend(loc="lower right", frameon=False)
+    plt.title("Clouds")
+    plt.show()
 
 if __name__ == "__main__":
     main()

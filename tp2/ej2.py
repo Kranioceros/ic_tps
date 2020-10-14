@@ -27,33 +27,26 @@ def main():
 
     particiones = utils.particionar_k_out(m_datos,int(cant_patrones*0.16))
 
-    #Patrones y etiquetas de entrenamiento
-
     fig,axs = plt.subplots(3,2)
     
-
     for nro_particion, particion in enumerate(particiones):
-
+        
+        #Patrones y etiquetas de entrenamiento
         m_inputs_trn = m_datos[particion[0],:-1]
         v_labels_trn = m_datos[particion[0], -1:]
-
-    #    idx = np.arange(m_inputs_trn.shape[0])
-    #    np.random.shuffle(idx)
-
-    #    m_inputs_trn = m_inputs_trn[idx]
-    #    v_labels_trn = v_labels_trn[idx]
 
         #Patrones y etiquetas de testeo
         m_inputs_tst = m_datos[particion[1],:-1]
         v_labels_tst = m_datos[particion[1],-1:]
 
-        idx = np.arange(m_inputs_trn.shape[0])
-        dimension = m_inputs_trn.shape[1]
-
+        
         neuronasRadiales = 10
         nnMultiCapa = NN([neuronasRadiales,1], learning_rate=.05, activation=utils.identidad, dactivation=utils.identidad)
 
         #Matriz de medias (tantas filas como neuronas radiales, y tantas columnas como dimension del problema)
+        idx = np.arange(m_inputs_trn.shape[0])
+        dimension = m_inputs_trn.shape[1]
+
         medias = np.zeros((neuronasRadiales, dimension))
         np.random.shuffle(idx)
         #for i in range(neuronasRadiales):
@@ -125,7 +118,6 @@ def main():
         m_inputs_test = np.zeros((m_inputs_tst.shape[0],neuronasRadiales))
         for idx_p_test,p_test in enumerate(m_inputs_tst):
             for idx_m,m in enumerate(medias):
-
                 m_inputs_test[idx_p_test,idx_m] = utils.gaussiana(p_test,m,sigma)
 
         #Feed fodward perceptrones simples
@@ -141,6 +133,8 @@ def main():
         #Lo esperado es que la media se encuentre cerca de 1
         #Tener en cuenta que puede ser mayor a 1 (si la salida de la red es mas grande que la etiqueta) o menor a 1 (si la salida de la red es menor que la etiqueta)
         print(f"Media Eficacias: {np.mean(eficacias)}")
+
+        #print(f"cant resultados: {resultados.shape} | cant etiq: {v_labels_tst.shape}")
 
         ax = axs[int(nro_particion/2), nro_particion%2]
         ax.scatter(np.arange(0,len(m_inputs_tst)), resultados[:]*max_dato, color=(1,0,0), label="Prediccion")
