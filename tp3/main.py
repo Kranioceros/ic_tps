@@ -177,5 +177,22 @@ def fuzzificacion(M, x):
 
     return np.apply_along_axis(membresia_x, 1, M)
 
+# Calcula el area y centroide de un conjunto borroso
+def area_centroide(conj):
+    tam_conj = len(conj)
+    if(tam_conj < 2 or tam_conj > 4 or tam_conj == 3):
+        print(f"Error en el tamaño del conjunto ({tam_conj}) debe ser de 2 (gaussiano) o 4 (trapecio) elementos")
+    elif tam_conj == 2: #Conjunto Gaussiano
+        cent = conj[0]
+        area = conj[1]*np.sqrt((2*np.pi))
+        return (area, cent)
+    else: #Conjunto trapezoidal
+        a = conj[0]
+        b = conj[1]
+        c = conj[2]
+        d = conj[3]
+        # COMPLETAR
+    pass
+
 if __name__ == "__main__":
     main()
