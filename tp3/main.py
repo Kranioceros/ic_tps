@@ -14,7 +14,7 @@ def main():
         xs_trap = [-5, -3.5, -2, 1, 4]
 
         for x in xs_trap:
-            print(f"X: {x} | u(x): {grado_membresia(conj_trap, x)}")
+            print(f"X: {x:+4.2f} | u(x): {grado_membresia(conj_trap, x):+4.2f}")
 
 
         print("Gaussiana")
@@ -22,7 +22,7 @@ def main():
         xs_gauss = [-5, -1, 0, 1, 2, 4.5]
 
         for x in xs_gauss:
-            print(f"X: {x} | u(x): {grado_membresia(conj_gauss, x)}")
+            print(f"X: {x:+4.2f} | u(x): {grado_membresia(conj_gauss, x):+4.2f}")
 
 
     #----------------- Ejercicio 2 -----------------
