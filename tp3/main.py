@@ -103,6 +103,8 @@ def grado_membresia(conj, x):
             np.ones(np.shape(x)),
             1 - (x - c) / (d - c)
         ))
+        # Volvemos 0 los valores sin sentido
+        y[np.logical_or(np.isnan(y), np.isinf(y))] = 0
 
         # Se suma la funcion de cada tramo. Aplica solo uno a la vez
         # gracias a la mascara
@@ -168,15 +170,12 @@ def graficar_gaussiana(p, rango_x):
 
 #Calcula el grado de membresía de 'x' en cada conjunto de 'M'
 def fuzzificacion(M, x):
-    #Vector de membresias para 'x'
-    #v_membresia = np.zeros(M.shape[0])
-    v_membresia = []
+    # Funcion auxiliar que devuelve la a `conj` de todos los valores
+    # de x
+    def membresia_x(conj):
+        return grado_membresia(conj, x)
 
-    #Calculo el grado de membresía de 'x' en cada conjunto 'p' de 'M'
-    for p in M:
-        v_membresia.append(grado_membresia(p, x))
-
-    return v_membresia
+    return np.apply_along_axis(membresia_x, 1, M)
 
 if __name__ == "__main__":
     main()
