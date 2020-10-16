@@ -16,7 +16,7 @@ from NN import NN
 
 
 def main():
-    neuronasRadiales = 4
+    neuronasRadiales = 2
     nnMultiCapa = NN([neuronasRadiales,1], learning_rate=.3)
 
     datos = np.genfromtxt("datos/XOR_trn.csv", dtype=float, delimiter=',')

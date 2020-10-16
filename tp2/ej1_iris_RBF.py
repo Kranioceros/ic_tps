@@ -6,7 +6,7 @@ from NN import NN
 
 
 def main():
-    neuronasRadiales = 10
+    neuronasRadiales = 20
     nnMultiCapa = NN([neuronasRadiales,3], learning_rate=.3)
 
     datos = np.genfromtxt("datos/irisbin.csv", dtype=float, delimiter=',')
