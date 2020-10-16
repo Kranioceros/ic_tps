@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def main():
 
     #Mascara para los ejercicios
-    ejercicios = [0, 1, 0]
+    ejercicios = [1, 0, 0]
 
     #----------------- Ejercicio 1 -----------------
     # Ejemplo de conjunto trapezoidal y gaussiano con sus grados de pertenencias
@@ -82,17 +82,37 @@ def grado_membresia(conj, x):
         b = conj[1]
         c = conj[2]
         d = conj[3]
-        membresia = 0 #Hago de cuenta que comienzo por fuera del conjunto
 
-        #Si no entra a ninguno de los siguientes 'ifs', entonces está por fuera del conjunto y queda membresia=0
-        if(x >= a and x < b): #Parte creciente
-            membresia = (x - a)/(b - a)
-        elif(x >= b and x <= c): #Parte constante
-            membresia = 1
-        elif(x > c and x <= d): #Parte decreciente
-            membresia = 1 - (x - c)/(d - c)
+        # Se inicializa membresia en cero. Se usa una matriz de 1x1 si `x` es un escalar
+        x_shape = np.shape(x)
+        if x_shape == ():
+            membresia = np.zeros((1, 1))
+        else:
+            membresia = np.zeros(x_shape) 
 
-        return membresia
+        # Mascara que define tramos de la funcion
+        m = np.vstack((
+            np.logical_and(x >= a, x < b),   # Parte creciente
+            np.logical_and(x >= b, x <= c),  # Parte constante
+            np.logical_and(x > c, x <= d)    # Parte decreciente 
+        ))
+
+        # Resultados de aplicar la funcion de cada tramo a x
+        y = np.vstack((
+            (x - a) / (b - a),
+            np.ones(np.shape(x)),
+            1 - (x - c) / (d - c)
+        ))
+
+        # Se suma la funcion de cada tramo. Aplica solo uno a la vez
+        # gracias a la mascara
+        membresia += m[0]*y[0] + m[1]*y[1] + m[2]*y[2]
+
+        # Si x es un escalar, se devuelve el unico elemento de la matriz
+        if x_shape == ():
+            return membresia[0][0]
+        else:
+            return membresia
 
 #Grafica los 'p' conjuntos que tiene M (las filas)
 # M puede tener 4 columnas por conjunto (trapezoidal) o 2 columnas por conjunto (gaussiano)
@@ -149,6 +169,7 @@ def graficar_gaussiana(p, rango_x):
 #Calcula el grado de membresía de 'x' en cada conjunto de 'M'
 def fuzzificacion(M, x):
     #Vector de membresias para 'x'
+    #v_membresia = np.zeros(M.shape[0])
     v_membresia = []
 
     #Calculo el grado de membresía de 'x' en cada conjunto 'p' de 'M'
