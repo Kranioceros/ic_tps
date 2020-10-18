@@ -1,0 +1,11 @@
+- Detector de fake news.
+
+- Algo relacionado con el lenguaje (detectar contexto de un texto, libro, frase, etc. Actuar en base al contexto, o simplemente que sea una especia de detector de contexto) (Si entiende el contexto, se podría hacer que escriba algo original bajo un contexto en particular?).
+
+- optimizador de calendarios (revisar el problema que solucionó bill gates para la escuela).
+
+- poker
+
+- ajustar parametros de auto de carrera en base al clima
+ - cambiar auto por alguna otra cosa
+ - para autos normales (otro tipo de parametros)
