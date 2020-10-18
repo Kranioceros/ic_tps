@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def main():
 
     #Mascara para los ejercicios
-    ejercicios = [1, 0, 0]
+    ejercicios = [0, 1, 0, 0, 0, 1]
 
     #----------------- Ejercicio 1 -----------------
     # Ejemplo de conjunto trapezoidal y gaussiano con sus grados de pertenencias
@@ -65,7 +65,41 @@ def main():
             print(f"Fuzzificacion de {x} -> {fuzzificacion(M_gauss, x)}")
 
 
+    #----------------- Ejercicio 4 -----------------
+    S = np.array([[-7, -5, -5, -3],
+                      [-5, -3, -3, -1],
+                      [-3, -1, -1, 0],
+                      [-1, 0, 0, 1],
+                      [0, 1, 1, 3],
+                      [1, 3, 3, 5],
+                      [3, 5, 5, 7]], dtype='f')
 
+    if(ejercicios[3]):
+        a = np.array([0, 0.7, 0.3, 0, 0, 0, 0])
+
+        print(f"Defuzz: {defuzzificacion(S, a)}")
+        graficar_conjuntos(S, [-20,20], a)
+
+
+    #----------------- Ejercicio 5 -----------------
+    if(ejercicios[4]):
+        r = [0,1,2,3,4,5,6]
+
+        print(f"Defuzz_regla: {defuzzificacion_regla(M_trap,S,r,5)}")
+
+    #----------------- Ejercicio 6 -----------------
+    if(ejercicios[5]):
+        r = [0,1,2,3,4,5,6]
+        #r = [6,5,4,3,2,1,0]
+
+        xs = np.linspace(-20, 20, 200)
+
+        ys = []
+        for x in xs:
+            ys.append(defuzzificacion_regla(M_gauss,S,r,x))
+
+        plt.plot(xs,ys)
+        plt.show()
 
 # Calcula el grado de membresía de 'x' en el conjunto 'conj'
 # 'conj' puede ser Gaussiano (2 elementos, media y varianza) o trapezoidal (4 elementos)
@@ -119,7 +153,10 @@ def grado_membresia(conj, x):
 #Grafica los 'p' conjuntos que tiene M (las filas)
 # M puede tener 4 columnas por conjunto (trapezoidal) o 2 columnas por conjunto (gaussiano)
 # 'rango_x' tiene 2 valores, el mínimo y máximo del dominio
-def graficar_conjuntos(M, rango_x):
+def graficar_conjuntos(M, rango_x, pesos=()):
+
+    if(pesos==()):
+        pesos = np.ones(M.shape[0])
 
     #Cantidad de elementos por conjunto
     tam_conj = M.shape[1]
@@ -129,9 +166,9 @@ def graficar_conjuntos(M, rango_x):
         print(f"Error en el tamaño del conjunto ({tam_conj}) debe ser de 2 (gaussiano) o 4 (trapecio) elementos")
 
     #Grafico cada conjunto de la matriz de conjuntos 'M'
-    for p in M:
+    for (idx,p) in enumerate(M):
         if(tam_conj==4): #Conjuntos trapezoidales
-            graficar_trapecio(p)
+            graficar_trapecio(p, pesos[idx])
             plt.title("Conjuntos trapezoidales")
         else: #Conjuntos gaussianos
             graficar_gaussiana(p, rango_x)
@@ -141,7 +178,7 @@ def graficar_conjuntos(M, rango_x):
 
 #Grafica las 3 rectas del trapecio a partir de los 4 elementos que definen al conjunto
 # 'c' es el color en RGB
-def graficar_trapecio(p):
+def graficar_trapecio(p, peso=1):
     #Elementos del trapecio
     a = p[0]
     b = p[1]
@@ -149,10 +186,10 @@ def graficar_trapecio(p):
     d = p[3]
 
     #Grado de membresía de elementos del trapecio
-    ua = grado_membresia(p,a)
-    ub = grado_membresia(p,b)
-    uc = grado_membresia(p,c)
-    ud = grado_membresia(p,d)
+    ua = grado_membresia(p,a)*peso
+    ub = grado_membresia(p,b)*peso
+    uc = grado_membresia(p,c)*peso
+    ud = grado_membresia(p,d)*peso
 
     plt.plot([a, b, c, d], [ua, ub, uc, ud])
 
@@ -178,7 +215,7 @@ def fuzzificacion(M, x):
     return np.apply_along_axis(membresia_x, 1, M)
 
 # Calcula el area y centroide de un conjunto borroso
-def area_centroide(conj):
+def area_centroide(conj, peso=1):
     tam_conj = len(conj)
     if(tam_conj < 2 or tam_conj > 4 or tam_conj == 3):
         print(f"Error en el tamaño del conjunto ({tam_conj}) debe ser de 2 (gaussiano) o 4 (trapecio) elementos")
@@ -191,8 +228,47 @@ def area_centroide(conj):
         b = conj[1]
         c = conj[2]
         d = conj[3]
-        # COMPLETAR
+        # Centros de gravedad de las tres partes del trapecio
+        cg1 = (b+c)/2
+        cg2 = b - (b-a) / 3
+        cg3 = c + (d-c) / 3
+        # Areas de las tres partes del trapecio
+        ar1 = (b-a)*grado_membresia(conj, b)*peso / 2    # Primer triangulo
+        ar2 = (c-b)*(grado_membresia(conj, c))*peso      # Rectangulo
+        ar3 = (d-c)*(grado_membresia(conj, c))*peso / 2  # Segundo traingulo
+
+        area = ar1 + ar2 + ar3
+
+        if(area == 0):
+            cent = 0
+        else:
+            cent = (ar1*cg1 + ar2*cg2 + ar3*cg3) / area
+        return (area, cent)
+    
     pass
+
+def defuzzificacion(S, a):
+    v_areas_cent = []
+    for idx in range(S.shape[0]):
+        v_areas_cent.append(area_centroide(S[idx,:], a[idx]))
+
+    num = 0
+    den = 0
+    for i in v_areas_cent:
+        num += i[0]*i[1]
+        den += i[0]
+
+    return num/den
+
+
+def defuzzificacion_regla(M, S, r, x):
+    
+    a = fuzzificacion(M, x)
+    
+    S[:] = S[r]
+
+    return defuzzificacion(S, a)
+
 
 if __name__ == "__main__":
     main()
