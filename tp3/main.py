@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def main():
 
     #Mascara para los ejercicios
-    ejercicios = [0, 1, 0, 0, 0, 1]
+    ejercicios = [1, 1, 1, 1, 1, 1]
 
     #----------------- Ejercicio 1 -----------------
     # Ejemplo de conjunto trapezoidal y gaussiano con sus grados de pertenencias
@@ -91,7 +91,8 @@ def main():
     if(ejercicios[5]):
         r = [0,1,2,3,4,5,6]
         #r = [6,5,4,3,2,1,0]
-
+        #r = [2,3,6,0,4,1,5]
+        
         xs = np.linspace(-20, 20, 200)
 
         ys = []
@@ -155,7 +156,7 @@ def grado_membresia(conj, x):
 # 'rango_x' tiene 2 valores, el mínimo y máximo del dominio
 def graficar_conjuntos(M, rango_x, pesos=()):
 
-    if(pesos==()):
+    if(len(pesos)==0):
         pesos = np.ones(M.shape[0])
 
     #Cantidad de elementos por conjunto
@@ -247,10 +248,13 @@ def area_centroide(conj, peso=1):
     
     pass
 
-def defuzzificacion(S, a):
+def defuzzificacion(S, a, r=()):
+    if(len(r)==0):
+        r = np.arange(len(a))
+
     v_areas_cent = []
     for idx in range(S.shape[0]):
-        v_areas_cent.append(area_centroide(S[idx,:], a[idx]))
+        v_areas_cent.append(area_centroide(S[r[idx],:], a[idx]))
 
     num = 0
     den = 0
@@ -265,9 +269,7 @@ def defuzzificacion_regla(M, S, r, x):
     
     a = fuzzificacion(M, x)
     
-    S[:] = S[r]
-
-    return defuzzificacion(S, a)
+    return defuzzificacion(S, a, r)
 
 
 if __name__ == "__main__":
