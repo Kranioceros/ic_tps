@@ -1,0 +1,31 @@
+Neuroph - > API en Java para hacer RNA, SOM, y otras cosas
+
+Bot AI para jugar en consola, puede servir para probar nuestra IA o para generar datos de prueba/test:
+https://github.com/fedden/poker_ai
+
+	Conterfactual regret minimization: (no paper)
+	http://modelai.gettysburg.edu/2013/cfr/cfr.pdf
+	https://int8.io/counterfactual-regret-minimization-for-poker-ai/
+
+	Teoria del juego , informacion imperfecta: (no paper)
+	https://www.analyticsvidhya.com/blog/2019/11/game-theory-ai/
+
+	Superhuman AI for multiplayer poker:
+	Explica una IA de poker llamada Pluribus, que le gana a profesionales en poker de 6 jugadores. Habla de los problemas y desafios de juegos multijugador. Usa equilibrio de Nash, busqueda en arboles con Monte Carlo, habla de CFR, informacion-imperfecta:
+	https://www.cs.cmu.edu/~noamb/papers/19-Science-Superhuman.pdf
+
+	Libratus: The Superhuman AI for No-Limit Poker:
+	Los mismos del anterior trabajaron en Libratus, que es basicamente la misma IA. Habla de la estructura de los algoritmos que usan:
+	https://www.ijcai.org/Proceedings/2017/0772.pdf
+
+	Computer poker: a review:
+	Resumen sobre los algoritmos usados para crear agentes de poker, sistemas basados en conocimiento y sistemas basados en simulacion: (es largo, pero tiene prácticamente toda la teoría que vamos a necesitar para diseñar una solución)
+	https://www.sciencedirect.com/science/article/pii/S0004370211000191
+
+	Monte-Carlo Tree Search: A New Framework for Game AI:
+	Se explica cómo, porqué y para qué se usa Monte Carlo en juegos-imperfectos con inteligencia artificial:
+	https://www.aaai.org/Papers/AIIDE/2008/AIIDE08-036.pdf
+	
+	Smooth UCT Search in Computer Poker:
+	Habla de los problemas de convergencia de Monte Carlo, y propone una variante (UCT Suave) que mejora convergencia:
+	https://www.davidsilver.uk/wp-content/uploads/2020/03/smooth_uct.pdf
