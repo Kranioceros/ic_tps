@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def main():
 
     #Mascara para los ejercicios
-    ejercicios = [0, 0, 0, 0, 0, 0, 1]
+    ejercicios = [1, 1, 1, 1, 1, 1, 1]
 
     #----------------- Ejercicio 1 -----------------
     # Ejemplo de conjunto trapezoidal y gaussiano con sus grados de pertenencias
@@ -66,26 +66,37 @@ def main():
 
 
     #----------------- Ejercicio 4 -----------------
-    S = np.array([[-7, -5, -5, -3],
-                      [-5, -3, -3, -1],
-                      [-3, -1, -1, 0],
-                      [-1, 0, 0, 1],
-                      [0, 1, 1, 3],
-                      [1, 3, 3, 5],
-                      [3, 5, 5, 7]], dtype='f')
+    S_trap = np.array([[-7, -5, -5, -3],
+                       [-5, -3, -3, -1],
+                       [-3, -1, -1, 0],
+                       [-1, 0, 0, 1],
+                       [0, 1, 1, 3],
+                       [1, 3, 3, 5],
+                       [3, 5, 5, 7]], dtype=float)
+
+    S_gauss = np.array([[-5, 2],
+                        [-3, 2],
+                        [-1, 1],
+                        [0, 1],
+                        [1, 1],
+                        [3, 2],
+                        [5, 2]], dtype=float)
 
     if(ejercicios[3]):
         a = np.array([0, 0.7, 0.3, 0, 0, 0, 0])
 
-        print(f"Defuzz: {defuzzificacion(S, a)}")
-        graficar_conjuntos(S, [-20,20], a)
+        print(f"Defuzzificacion Trapecios: {defuzzificacion(S_trap, a)}")
+        graficar_conjuntos(S_trap, [-20,20], a)
+
+        print(f"Defuzzificacion Trapecios: {defuzzificacion(S_gauss, a)}")
+        graficar_conjuntos(S_gauss, [-20,20], a)
 
 
     #----------------- Ejercicio 5 -----------------
     if(ejercicios[4]):
         r = [0,1,2,3,4,5,6]
 
-        print(f"Defuzz_regla: {defuzzificacion_regla(M_trap,S,5,r)}")
+        print(f"Defuzz_regla: {defuzzificacion_regla(M_trap,S_trap,5,r)}")
 
     #----------------- Ejercicio 6 -----------------
     if(ejercicios[5]):
@@ -95,11 +106,24 @@ def main():
         
         xs = np.linspace(-20, 20, 200)
 
-        ys = []
+        #Trapecios
+        ys_trap = []
         for x in xs:
-            ys.append(defuzzificacion_regla(M_gauss,S,x,r))
+            ys_trap.append(defuzzificacion_regla(M_trap,S_trap,x,r))
 
-        plt.plot(xs,ys)
+        plt.figure(1)
+        plt.plot(xs,ys_trap)
+        plt.title("Conjuntos trapezoidales")
+
+        #Gaussianas
+        ys_gauss = []
+        for x in xs:
+            ys_gauss.append(defuzzificacion_regla(M_gauss,S_gauss,x,r))
+
+        plt.figure(2)
+        plt.plot(xs,ys_gauss)
+        plt.title("Conjuntos gaussianos")
+
         plt.show()
 
     #----------------- Ejercicio 7 -----------------
@@ -268,7 +292,7 @@ def graficar_conjuntos(M, rango_x, pesos=()):
             graficar_trapecio(p, pesos[idx])
             plt.title("Conjuntos trapezoidales")
         else: #Conjuntos gaussianos
-            graficar_gaussiana(p, rango_x)
+            graficar_gaussiana(p, rango_x, pesos[idx])
             plt.title("Conjuntos gaussianos")
 
     plt.show()
@@ -292,13 +316,13 @@ def graficar_trapecio(p, peso=1):
 
 
 #Grafica una gaussiana a partir de los 2 elementos del conjunto
-def graficar_gaussiana(p, rango_x):
+def graficar_gaussiana(p, rango_x, peso):
 
     #Rango de variable 'x'
     xs = np.linspace(rango_x[0], rango_x[1], 200)
 
     #Grado de membresía para cada 'x' en 'xs'
-    us = grado_membresia(p, xs)
+    us = grado_membresia(p, xs)*peso
 
     plt.plot(xs, us)
 
@@ -318,7 +342,7 @@ def area_centroide(conj, peso=1):
         print(f"Error en el tamaño del conjunto ({tam_conj}) debe ser de 2 (gaussiano) o 4 (trapecio) elementos")
     elif tam_conj == 2: #Conjunto Gaussiano
         cent = conj[0]
-        area = conj[1]*np.sqrt((2*np.pi))
+        area = conj[1]*np.sqrt((2*np.pi))*peso
         return (area, cent)
     else: #Conjunto trapezoidal
         a = conj[0]
