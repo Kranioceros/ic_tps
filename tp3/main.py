@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def main():
 
     #Mascara para los ejercicios
-    ejercicios = [1, 1, 1, 1, 1, 1]
+    ejercicios = [0, 0, 0, 0, 0, 0, 1]
 
     #----------------- Ejercicio 1 -----------------
     # Ejemplo de conjunto trapezoidal y gaussiano con sus grados de pertenencias
@@ -85,7 +85,7 @@ def main():
     if(ejercicios[4]):
         r = [0,1,2,3,4,5,6]
 
-        print(f"Defuzz_regla: {defuzzificacion_regla(M_trap,S,r,5)}")
+        print(f"Defuzz_regla: {defuzzificacion_regla(M_trap,S,5,r)}")
 
     #----------------- Ejercicio 6 -----------------
     if(ejercicios[5]):
@@ -97,10 +97,106 @@ def main():
 
         ys = []
         for x in xs:
-            ys.append(defuzzificacion_regla(M_gauss,S,r,x))
+            ys.append(defuzzificacion_regla(M_gauss,S,x,r))
 
         plt.plot(xs,ys)
         plt.show()
+
+    #----------------- Ejercicio 7 -----------------
+    if(ejercicios[6]):
+        S1 = np.array([[-7, -5, -5, -3],
+                    [-5, -3, -3, -1],
+                    [-3, -1, -1, 0],
+                    [-1, 0, 0, 1],
+                    [0, 1, 1, 3],
+                    [1, 3, 3, 5],
+                    [3, 5, 5, 7]], dtype=float)
+            
+        S2 = np.array([[-7, -5, -5, -4],
+                    [-5, -4, -4, -3],
+                    [-4, -3, -3, 0],
+                    [-3, 0, 0, 3],
+                    [0, 3, 3, 4],
+                    [3, 4, 4, 5],
+                    [4, 5, 5, 7]], dtype=float)
+
+        M1 = np.array([[-20, -20, -10, -5],
+                    [-10, -5, -5, -2],
+                    [-5, -2, -2, 0],
+                    [-2, 0, 0, 2],
+                    [0, 2, 2, 5],
+                    [2, 5, 5, 10],
+                    [5, 10, 20, 20]], dtype=float)
+            
+        M2 = np.array([[-20, -20, -10, -5],
+                    [-10, -5, -4, -2],
+                    [-4, -2, -1, 0],
+                    [-1, 0, 0, 1],
+                    [0, 1, 2, 4],
+                    [2, 4, 5, 10],
+                    [5, 10, 20, 20]], dtype=float)  
+        
+        sistemas = [(M1,S1),(M1,S2),(M2,S1),(M2,S2)]
+
+        def acondicionador(toAnt, ti, q):
+            c = 40/41
+            return (ti + c*q + c*(toAnt - ti))
+
+        #td = temperatura deseada
+        td1 = 15
+        td2 = 25
+        transicion = 30
+        pasos = 200
+
+        Tos = []
+        sistemasString = ['M1,S1','M1,S2','M2,S1','M2,S2']
+
+        fig,axs = plt.subplots(2,2)
+
+        for (idx,(M,S)) in enumerate(sistemas):
+    
+            To = np.zeros((pasos))
+            tdActual = td1
+
+            q = defuzzificacion_regla(M,S,0)
+            To[0] = acondicionador(tdActual, td1, q)
+            error = tdActual - To[0]
+
+            #q = 0
+            #To[0] = td1
+            #error = 0
+
+            for i in range(1,pasos):
+                if(i == transicion):
+                    tdActual = td2  
+
+                q = defuzzificacion_regla(M,S,error)
+                
+                To[i] = acondicionador(To[i-1], td1, q)
+                error = tdActual - To[i]
+                
+            Tos.append(To)
+            plt.figure(1)
+            ax = axs[int(idx/2),idx%2]
+            ax.plot(range(pasos), To)
+            ax.set_title(sistemasString[idx])
+            ax.set_xlabel("Segundos")
+            ax.set_ylabel("Grados")
+
+
+        plt.figure(2)
+        plt.plot(range(pasos), Tos[0], label="M1 S1") 
+        plt.plot(range(pasos), Tos[1], label="M1 S2") 
+        plt.plot(range(pasos), Tos[2], label="M2 S1") 
+        plt.plot(range(pasos), Tos[3], label="M2 S2") 
+        plt.legend(loc="lower right", frameon=False)
+        plt.title("Respuesta de sistemas térmicos en conjunto")
+        plt.xlabel("Segundos")
+        plt.ylabel("Grados")
+        
+        plt.show() 
+
+
 
 # Calcula el grado de membresía de 'x' en el conjunto 'conj'
 # 'conj' puede ser Gaussiano (2 elementos, media y varianza) o trapezoidal (4 elementos)
@@ -230,8 +326,8 @@ def area_centroide(conj, peso=1):
         c = conj[2]
         d = conj[3]
         # Centros de gravedad de las tres partes del trapecio
-        cg1 = (b+c)/2
-        cg2 = b - (b-a) / 3
+        cg1 = b - (b-a) / 3
+        cg2 = (b+c)/2
         cg3 = c + (d-c) / 3
         # Areas de las tres partes del trapecio
         ar1 = (b-a)*grado_membresia(conj, b)*peso / 2    # Primer triangulo
@@ -265,10 +361,10 @@ def defuzzificacion(S, a, r=()):
     return num/den
 
 
-def defuzzificacion_regla(M, S, r, x):
+def defuzzificacion_regla(M, S, x, r=()):
     
     a = fuzzificacion(M, x)
-    
+
     return defuzzificacion(S, a, r)
 
 
