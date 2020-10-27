@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def main():
 
     #Mascara para los ejercicios
-    ejercicios = [0,0,0,0,0,0,0,1]
+    ejercicios = [0,0,0,0,0,0,1,0]
 
     #----------------- Ejercicio 1 -----------------
     # Ejemplo de conjunto trapezoidal y gaussiano con sus grados de pertenencias
@@ -255,8 +255,31 @@ def main():
             ax.set_xlabel("Segundos")
             ax.set_ylabel("Grados")
 
+        #Para cada par de conjuntos entrada/salida
+        figure_idx = 10
+        xs = np.linspace(-20, 20, 200)
+        for (idx,c) in enumerate(sistemas):
+            y = []
+            #Calculo la salida para cada x
+            for x in xs:
+                y.append(defuzzificacion_regla(c[0],c[1],x))
 
-        plt.figure(10)
+            #Grafico
+            plt.figure(figure_idx)
+            #Correlacion salida
+            plt.subplot(311)
+            plt.plot(xs,y)
+            plt.title(sistemasString[idx])
+            #Conjuntos de entrada
+            plt.subplot(312)
+            graficar_conjuntos(c[0], [-20,20])
+            #Conjuntos de salida
+            plt.subplot(313)
+            graficar_conjuntos(c[1], [-20,20])
+
+            figure_idx += 1
+
+        plt.figure(figure_idx)
         plt.plot(range(pasos), Tos[0], label="M1 S1") 
         plt.plot(range(pasos), Tos[1], label="M1 S2") 
         plt.plot(range(pasos), Tos[2], label="M2 S1") 
@@ -271,9 +294,11 @@ def main():
     if(ejercicios[7]):
         
         M = np.array([[-20, -18, -12, -10],
+                       [-10,0,0,10],
                        [10, 12, 18, 20]], dtype=float)
 
         S = np.array([[-20, -15, -15, -10],
+                        [-10,0,0,10],
                        [10, 15, 15, 20]], dtype=float)
 
         xs = np.linspace(-20, 20, 200)
@@ -306,11 +331,11 @@ def main():
             plt.title("Conjuntos de salida")
 
             M[0] += i
-            M[1] -= i
+            M[2] -= i
             S[0] += i
-            S[1] -= i
+            S[2] -= i
 
-            plt.pause(0.0001)
+            plt.pause(0.1)
                 
         
     plt.show() 
