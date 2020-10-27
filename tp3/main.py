@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def main():
 
     #Mascara para los ejercicios
-    ejercicios = [0,0,0,0,0,1,0]
+    ejercicios = [0,0,0,0,0,0,0,1]
 
     #----------------- Ejercicio 1 -----------------
     # Ejemplo de conjunto trapezoidal y gaussiano con sus grados de pertenencias
@@ -265,6 +265,53 @@ def main():
         plt.title("Respuesta de sistemas térmicos en conjunto")
         plt.xlabel("Segundos")
         plt.ylabel("Grados")
+
+
+    #Ejercicio Debug
+    if(ejercicios[7]):
+        
+        M = np.array([[-20, -18, -12, -10],
+                       [10, 12, 18, 20]], dtype=float)
+
+        S = np.array([[-20, -15, -15, -10],
+                       [10, 15, 15, 20]], dtype=float)
+
+        xs = np.linspace(-20, 20, 200)
+
+        conjuntos = [(M, S)]
+        figure_idx = 11
+
+        #Grafico
+        plt.figure(figure_idx)
+        vi = np.linspace(0, 15, 100)
+        for i in vi:
+            plt.clf() 
+
+            y = []
+            #Calculo la salida para cada x
+            for x in xs:
+                y.append(defuzzificacion_regla(M,S,x))
+    
+            #Correlacion salida
+            plt.subplot(311)
+            plt.plot(xs,y)
+            plt.title("Correlacion")
+            #Conjuntos de entrada
+            plt.subplot(312)
+            graficar_conjuntos(M, [-20,20])
+            plt.title("Conjuntos de entrada")
+            #Conjuntos de salida
+            plt.subplot(313)
+            graficar_conjuntos(S, [-20,20])
+            plt.title("Conjuntos de salida")
+
+            M[0] += i
+            M[1] -= i
+            S[0] += i
+            S[1] -= i
+
+            plt.pause(0.0001)
+                
         
     plt.show() 
 
