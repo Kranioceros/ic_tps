@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def main():
 
     #Mascara para los ejercicios
-    ejercicios = [1, 1, 1, 1, 1, 1, 1]
+    ejercicios = [0,0,0,0,0,1,0]
 
     #----------------- Ejercicio 1 -----------------
     # Ejemplo de conjunto trapezoidal y gaussiano con sus grados de pertenencias
@@ -47,9 +47,13 @@ def main():
     if(ejercicios[1]):
         rango_x = [-20, 20]
 
+        plt.figure(1)
         graficar_conjuntos(M_trap, rango_x)
-
+        plt.title("Conjuntos de entrada trapezoidales")
+        
+        plt.figure(2)
         graficar_conjuntos(M_gauss, rango_x)
+        plt.title("Conjuntos de entrada gaussianos")
 
 
     #----------------- Ejercicio 3 -----------------
@@ -86,10 +90,14 @@ def main():
         a = np.array([0, 0.7, 0.3, 0, 0, 0, 0])
 
         print(f"Defuzzificacion Trapecios: {defuzzificacion(S_trap, a)}")
+        plt.figure(3)
         graficar_conjuntos(S_trap, [-20,20], a)
+        plt.title("Conjuntos de salida trapezoidales")
 
+        plt.figure(4)
         print(f"Defuzzificacion Trapecios: {defuzzificacion(S_gauss, a)}")
         graficar_conjuntos(S_gauss, [-20,20], a)
+        plt.title("Conjuntos de salida gaussianos")
 
 
     #----------------- Ejercicio 5 -----------------
@@ -104,27 +112,71 @@ def main():
         #r = [6,5,4,3,2,1,0]
         #r = [2,3,6,0,4,1,5]
         
+        #Conjuntos de entrada trapezoidales con diferente solapamientos
+        M_trap_2 = np.array([[-20, -20, -7, -5],
+                       [-7, -5, -5, -2],
+                       [-6, -2, -2, 1],
+                       [-3, 0, 0, 3],
+                       [1, 2, 2, 6],
+                       [2, 5, 5, 7],
+                       [5, 7, 20, 20]])
+
+        #Conjuntos de entrada gaussianos con diferente solapamientos
+        M_gauss_2 = np.array([[-15, 3],
+                        [-5, 2],
+                        [-4, 1],
+                        [0, 1],
+                        [4, 1],
+                        [5, 2],
+                        [15, 3]])
+
+        #Conjuntos de salida trapezoidales con diferente solapamientos
+        S_trap_2 = np.array([[-7, -3, -3, -2],
+                       [-5, -4, -4, -1],
+                       [-3, -1, -1, 0],
+                       [-2, 0, 0, 2],
+                       [0, 1, 1, 3],
+                       [1, 4, 4, 5],
+                       [2, 3, 3, 7]], dtype=float)
+
+        #Conjuntos de salida gaussianos con diferente solapamientos
+        S_gauss_2 = np.array([[-5, 2],
+                        [-3, 2],
+                        [-2, 1],
+                        [0, 1],
+                        [2, 1],
+                        [3, 2],
+                        [5, 2]], dtype=float)
+
+
         xs = np.linspace(-20, 20, 200)
 
-        #Trapecios
-        ys_trap = []
-        for x in xs:
-            ys_trap.append(defuzzificacion_regla(M_trap,S_trap,x,r))
+        conjuntos = [(M_trap, S_trap), (M_gauss, S_gauss), (M_trap_2, S_trap_2), (M_gauss_2, S_gauss_2)]
+        figure_idx = 5
 
-        plt.figure(1)
-        plt.plot(xs,ys_trap)
-        plt.title("Conjuntos trapezoidales")
+        #Para cada par de conjuntos entrada/salida
+        for c in conjuntos:
+            y = []
+            #Calculo la salida para cada x
+            for x in xs:
+                y.append(defuzzificacion_regla(c[0],c[1],x,r))
 
-        #Gaussianas
-        ys_gauss = []
-        for x in xs:
-            ys_gauss.append(defuzzificacion_regla(M_gauss,S_gauss,x,r))
+            #Grafico
+            plt.figure(figure_idx)
+            #Correlacion salida
+            plt.subplot(311)
+            plt.plot(xs,y)
+            plt.title("Correlacion")
+            #Conjuntos de entrada
+            plt.subplot(312)
+            graficar_conjuntos(c[0], [-20,20])
+            plt.title("Conjuntos de entrada")
+            #Conjuntos de salida
+            plt.subplot(313)
+            graficar_conjuntos(c[1], [-20,20])
+            plt.title("Conjuntos de salida")
 
-        plt.figure(2)
-        plt.plot(xs,ys_gauss)
-        plt.title("Conjuntos gaussianos")
-
-        plt.show()
+            figure_idx += 1
 
     #----------------- Ejercicio 7 -----------------
     if(ejercicios[6]):
@@ -186,10 +238,6 @@ def main():
             To[0] = acondicionador(tdActual, td1, q)
             error = tdActual - To[0]
 
-            #q = 0
-            #To[0] = td1
-            #error = 0
-
             for i in range(1,pasos):
                 if(i == transicion):
                     tdActual = td2  
@@ -200,7 +248,7 @@ def main():
                 error = tdActual - To[i]
                 
             Tos.append(To)
-            plt.figure(1)
+            plt.figure(9)
             ax = axs[int(idx/2),idx%2]
             ax.plot(range(pasos), To)
             ax.set_title(sistemasString[idx])
@@ -208,7 +256,7 @@ def main():
             ax.set_ylabel("Grados")
 
 
-        plt.figure(2)
+        plt.figure(10)
         plt.plot(range(pasos), Tos[0], label="M1 S1") 
         plt.plot(range(pasos), Tos[1], label="M1 S2") 
         plt.plot(range(pasos), Tos[2], label="M2 S1") 
@@ -218,7 +266,7 @@ def main():
         plt.xlabel("Segundos")
         plt.ylabel("Grados")
         
-        plt.show() 
+    plt.show() 
 
 
 
@@ -290,12 +338,9 @@ def graficar_conjuntos(M, rango_x, pesos=()):
     for (idx,p) in enumerate(M):
         if(tam_conj==4): #Conjuntos trapezoidales
             graficar_trapecio(p, pesos[idx])
-            plt.title("Conjuntos trapezoidales")
         else: #Conjuntos gaussianos
             graficar_gaussiana(p, rango_x, pesos[idx])
-            plt.title("Conjuntos gaussianos")
 
-    plt.show()
 
 #Grafica las 3 rectas del trapecio a partir de los 4 elementos que definen al conjunto
 # 'c' es el color en RGB
