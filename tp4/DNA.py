@@ -25,33 +25,66 @@ class DNA:
         #A los negativos los hago 0
         self.dna[self.dna<0] = 0   
 
-    #Combina este agente con el agente 'a'
-    #prct indica el porcentaje que agarramos de aeste agente y 1-prct es lo del agente 'a'
-    #TODO: ver si a prct lo dejamos en crossover o lo ponemos como un parametro de inicializacion de GA
-    def CrossOver(self, a, prct):
-        newAgent = DNA(self.n)
 
-        #Cantidad de alelos del padre 1
-        Na1 = int(self.n*prct)
-        
-        #Completo la primera parte con lo del padre 1
-        newAgent.dna[0:Na1] = self.dna[0:Na1]
-        #Completo la segunda parte con lo del padre 2
-        newAgent.dna[Na1:] = a.dna[Na1:]
-        
-        #Devuelvo el nuevo agente
-        return newAgent
+    #Combina este agente con el agente 'a'
+    #prob -> probabilidad de que se genere la cruza
+    def CrossOver(self, a, prob):
+        #Nuevo agente
+        newAgent1 = DNA(self.n)
+        newAgent2 = DNA(self.n)
+
+        #"Tiro la moneda"
+        crossover = np.random.rand()
+
+        #Si estoy dentro de la probabilidad de cruza
+        if(crossover <= prob):
+            #Punto de corte
+            crossPoint = np.random.randint(0, self.n)
+            
+            #Completo la primera parte con lo del padre 1
+            newAgent1.dna[0:crossPoint] = self.dna[0:crossPoint]
+            #Completo la segunda parte con lo del padre 2
+            newAgent1.dna[crossPoint:] = a.dna[crossPoint:]
+            
+            #Completo la primera parte con lo del padre 2
+            newAgent2.dna[0:crossPoint] = a.dna[0:crossPoint]
+            #Completo la segunda parte con lo del padre 1
+            newAgent2.dna[crossPoint:] = self.dna[crossPoint:]
+        else:
+            #No hay cruza, los nuevos agentes son iguales a los padres
+            newAgent1.dna = self.dna
+            newAgent2.dna = a.dna
+
+        #Devuelvo los nuevos agentes
+        return (newAgent1, newAgent2)
+
 
     #Muta al agente
     #TODO: Se podría dividir la probabilidad de mutacion entre todos los alelos y "tirar una moneda" para cada uno
-    def Mutate(self, prob):
-        #Agarro un alelo al azar
-        randAllele = np.random.randint(0, self.n)
+    def Mutate(self, prob, perAllele=False):
+        #Distribuyo la probabilidad de mutacion entre todos los alelos
+        if(perAllele):
+            #Probabilidad de mutacion de cada alelo
+            probPerAllele = prob/self.n
 
-        # "Tiro la moneda"
-        mutate = np.random.rand()
+            #Para cada alelo
+            for i in range(self.n):
+                #"Tiro la moneda"
+                mutate = np.random.rand()
 
-        # Si estamos dentro de la probabilidad de mutacion, muto
-        if(mutate < prob):
-            #Invierto bit
-            self.dna[randAllele] = not(self.dna[randAllele])
+                #Si estoy dentro de la probabilidad
+                if(mutate <= probPerAllele):
+                    #Invierto bit
+                    self.dna[i] = not(self.dna[i])
+        #Solo un alelo es mutado
+        else:
+            #Agarro un alelo al azar
+            randAllele = np.random.randint(0, self.n)
+
+            # "Tiro la moneda"
+            mutate = np.random.rand()
+
+            # Si estamos dentro de la probabilidad de mutacion, muto
+            if(mutate <= prob):
+                #Invierto bit
+                self.dna[randAllele] = not(self.dna[randAllele])
