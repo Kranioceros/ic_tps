@@ -40,20 +40,36 @@ class GA:
             v_fitness = self.EvaluatePopulation()
 
             #Muestro el fitness medio para esta generacion
-            print(f"Mean Fitness generacion {_i}: {np.max(v_fitness)}")
+            print(f"Max Fitness generacion {_i}: {np.max(v_fitness)} | ({self.f_deco(self.population[np.argmax(v_fitness)].dna)}, {-self.f_fitness(self.f_deco(self.population[np.argmax(v_fitness)].dna))})")
+            #print(f"max: {np.max(v_fitness)} | mean: {np.mean(v_fitness)} | STD: {np.std(v_fitness)}")
 
+            v_fitness_ord = -np.sort(-v_fitness)
+
+            i = self.N
             #Itero tantas veces como agentes en una poblacion
-            for _j in range(int(self.N/2)):
+            for _j in range(int(np.ceil(self.N/2))):
                 #Eligo dos agentes al "azar"
                 a1 = self.Picker()
                 a2 = self.Picker()
 
+                #a1 = self.PickerWindow(i, v_fitness_ord)
+                #i -= 1
+                #a2 = self.PickerWindow(i, v_fitness_ord)
+
+                #print(f"Padres: {a1.dna} | {a2.dna}")
+
                 #Combino los dos agentes y obtengo dos nuevos
                 (newAgent1, newAgent2) = a1.CrossOver(a2, self.probCrossOver)
+
+                #print(f"Hijoss: {newAgent1.dna} | {newAgent2.dna}")
 
                 #Muto a los agentes nuevos
                 newAgent1.Mutate(self.probMutation)
                 newAgent2.Mutate(self.probMutation)
+
+                #print(f"Mutado: {newAgent1.dna} | {newAgent2.dna}")
+
+                #print(f"{np.logical_xor(a1.dna, newAgent1.dna)} | {np.logical_xor(a2.dna, newAgent2.dna)}")
 
                 #Los agrego a la nueva poblacion
                 newPopulation.append(newAgent1)
@@ -64,7 +80,10 @@ class GA:
 
             #Una vez generados N agentes nuevos, reemplazo la poblacion actual
             #TODO: revisar si esta asignacion no causa problemas
-            self.population = newPopulation
+            self.population = list(newPopulation)
+
+            #print(f"Generacion {_i}")
+            #self.DebugPopulation()
 
 
     #Selecciono al "azar" un agente de toda la poblacion
@@ -93,6 +112,14 @@ class GA:
         #Devuelvo el agente que vació el recipiente
         return self.population[randAgent]
 
+    def PickerWindow(self, i, v_fitness, v_idxs):
+        ventana = v_fitness[0:i]
+
+        randIdx = np.random.randint(0, len(ventana))
+
+        return self.population[randIdx]
+
+
 
     #Evalúa cada agente de la poblacion con la funcion de fitness
     #Tambien normaliza todos los fitness
@@ -107,12 +134,12 @@ class GA:
             v_fitness[i] = self.f_fitness(self.f_deco(a.dna))
             a.fitness = v_fitness[i]
 
-        #Busco el fitness maximo
-        maxFitness = np.max(v_fitness)
+        #Busco el mejor fitness
+        bestFitness = np.max(v_fitness)
 
         #Normalizo los fitness de cada agente con respecto al fitness maximo
         for a in self.population:
-            a.fitnessNormalize = a.fitness/maxFitness
+            a.fitnessNormalize = a.fitness/np.abs(bestFitness)
 
         #Devuelvo el fitness solo como debug, no es necesario devolverlo
         return v_fitness

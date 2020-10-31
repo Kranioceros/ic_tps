@@ -37,7 +37,7 @@ class DNA:
         crossover = np.random.rand()
 
         #Si estoy dentro de la probabilidad de cruza
-        if(crossover <= prob):
+        if(crossover <= prob and prob!=0):
             #Punto de corte
             crossPoint = np.random.randint(0, self.n)
             
@@ -52,8 +52,8 @@ class DNA:
             newAgent2.dna[crossPoint:] = self.dna[crossPoint:]
         else:
             #No hay cruza, los nuevos agentes son iguales a los padres
-            newAgent1.dna = self.dna
-            newAgent2.dna = a.dna
+            newAgent1.dna = np.array(self.dna)
+            newAgent2.dna = np.array(a.dna)
 
         #Devuelvo los nuevos agentes
         return (newAgent1, newAgent2)
@@ -88,3 +88,7 @@ class DNA:
             if(mutate <= prob):
                 #Invierto bit
                 self.dna[randAllele] = not(self.dna[randAllele])
+
+
+    def Debug(self):
+        print(f"dna: {self.dna}")
