@@ -21,6 +21,10 @@ class GA:
 
         self.population = []
 
+        self.bestAgentsX = []
+        self.bestAgentsY = []
+        self.bestAgentsZ = []
+
         self.Initialize()
 
 
@@ -53,6 +57,20 @@ class GA:
 
             #El mejor agente de esta poblacion
             bestAgent = self.population[np.argmax(v_fitness)]
+
+            
+            best = self.f_deco(bestAgent.dna)
+            #if(len(best)>1):
+                #self.bestAgentsX.append(best[0])
+                #self.bestAgentsY.append(best[1])
+            #else:
+
+            self.bestAgentsX.append(best)
+            #self.bestAgentsX = np.append(self.bestAgentsX, best)
+
+            self.bestAgentsZ.append(-self.f_fitness(self.f_deco(bestAgent.dna)))
+            #self.bestAgentsZ = np.append(self.bestAgentsZ, -self.f_fitness(self.f_deco(bestAgent.dna)))
+
 
             #Muestro el mejor fitness para esta generacion
             print(f"Coord Minimas: ({self.f_deco(bestAgent.dna)}, {-self.f_fitness(self.f_deco(bestAgent.dna))})")

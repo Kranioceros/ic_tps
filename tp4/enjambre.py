@@ -6,47 +6,71 @@ def main():
     N = 100  #tamaño del enjambre
     maxIter = 100 #cantidad maxima de iteraciones
 
-    #Para probar distintas ecuaciones:
-        #Cambiar el primer argumento de particula por la funcion de fitness que se quiera usar
-        #Cambiar dim por lo que sea adecuado
-        #Cambiar los xmin y xmax
+    #Distintos ejemplos para probar
+    ejemplos = [(fitness1, 1, -512, 512), (fitness2, 1, 0, 20), (fitness3, 2, -100, 100)]
 
-    dim = 1 #dimension del problema
+    #Ejemplo elegido actualmente [0, 1, 2]
+    ec = 2
+
+    #Variables por ejemplo (funcion de fitness, dimension del problema, minimo para x, maximo para x)
+    fit = ejemplos[ec][0]
+    dim = ejemplos[ec][1]
+    xmin = ejemplos[ec][2]
+    xmax = ejemplos[ec][3]
+
+    #Inicializo el enjambre con particulas posicionadas al azar en el hiperespacio
     enjambre = []
     for _i in range(N):
-        enjambre.append(particula(fitness1, dim, xmin=-512, xmax=512))
+        enjambre.append(particula(fit, dim, xmin, xmax))
 
+    #Mejor global
+    #TODO: inicializar de otra manera??
     bestGlobalY = 99999
     bestGlobalX = np.zeros(dim)
 
+    #Varaibles de corte 
     bestGlobalPrevio = bestGlobalY
     bestRepetido = 0
     maxRepetido = 10
 
+
     for _i in range(maxIter):
+        #Para cada particula
         for part in enjambre:
+            #Evalua su "fitness" (no es un fitness en realidad)
             fit = part.Evaluar()
+            #Actaulizo el mejor local de la particula
+            #TODO: es buen diseño separar esto de el "Evaluar"?
             part.ActualizarMejor(fit)
 
+            #Reviso si el performance de esta particula es mejor que el global
             if(fit < bestGlobalY):
                 bestGlobalY = fit
                 bestGlobalX = part.x
                 bestRepetido = 0
                 bestGlobalPrevio = bestGlobalY
 
+        #Control de repeticion de mejor global (condicion de corte)
         if(bestGlobalPrevio == bestGlobalY):
             bestRepetido += 1
             if(bestRepetido > maxRepetido):
                 print(f"Convergencia por repeticion en iteracion {_i}")
                 break
 
+        #Para cada particula
         for part in enjambre:
+            #Actualizo posicion y velocidad
+            #TODO: primero velocidad o primero posicion??
             part.ActualizarPosicion()
             part.ActualizarVelocidad(bestGlobalX)
 
+    #Al converger, muestro la mejor global
+    if(bestRepetido <= maxRepetido):
+        print(f"Convergencia por máxima cantidad de iteraciones {maxIter}")
     print(f"Best Global X: {bestGlobalX} | Best Global Y: {bestGlobalY}")
 
 
+#------ Funciones de fitness para cada ejemplo -------------
 def fitness1(x):
     return -x*np.sin(np.sqrt(np.abs(x)))
 
