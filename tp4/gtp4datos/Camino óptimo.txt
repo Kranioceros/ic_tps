@@ -1,0 +1,10 @@
+#================
+# FUENTE: gr17
+#================
+
+ - [data]   http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/gr17.tsp.gz
+ - [optimo] --
+
+Camino: [11 3 15 14 17 6 8 7 13 4 1 16 12 9 5 2 10 11]
+
+Distancia: 2085 km
