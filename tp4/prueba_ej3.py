@@ -50,7 +50,7 @@ def main():
 
     # Colonia(semilla=None, n_hormigas, origen, estrategia, m_grafo, f_parada, f_costo, sigma0, alfa, evaporacion):
     colonia_kwargs = {
-        'n_hormigas' : 20,
+        'n_hormigas' : 100,
         'origen' : 0,
         'estrategia' : EstrategiaFeromona.Local,
         'm_grafo'    : m_grafo,
@@ -67,6 +67,8 @@ def main():
     colonia = Colonia(**colonia_kwargs)
 
     (res, _epocas) = colonia.ejecutar(100, debug=True)
+
+    print(colonia.m_feromonas)
 
 if __name__ == "__main__":
     main()

@@ -35,7 +35,8 @@ class Colonia:
         self.rng = np.random.default_rng(semilla)
 
         # Vector con feromonas para cada arista
-        self.m_feromonas = sigma0 * self.rng.random(m_grafo.shape)
+        #self.m_feromonas = sigma0 * self.rng.random(m_grafo.shape)
+        self.m_feromonas = np.ones(m_grafo.shape, dtype=float) * 0.1
         
         # Matriz con caminos de todas las hormigas. El camino mas largo posible
         # es de tamaño `N`. Se inicializa en 0.
@@ -146,8 +147,11 @@ class Colonia:
                 delta = np.ma.array(delta, mask=np.isnan(delta))
                 self.m_feromonas += self.q * delta
             else:
-                # POR HACER
-                pass
+                delta = 0
+                for i in range(self.N):
+                    for j in range(self.N):
+                        delta += np.sum(self.q / self.v_costos[m_visitas[i, j, :]])
+                self.m_feromonas += delta
             
         return (self.m_caminos, max_epocas)
         
