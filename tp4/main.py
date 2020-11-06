@@ -3,7 +3,7 @@ from GA import GA
 import matplotlib.pyplot as plt
 from functools import reduce
 
-#TODO:
+#TODO: agregar lo del gradiente
 
 def main():
 
@@ -14,19 +14,17 @@ def main():
     maxGens = 1000 #Cantidad maxima de generacion a iterar
 
     #Pares de decodificadores/fitness para cada funcion
-    datos = [(DecoDecimal1, fitness1, -512, 512),(DecoDecimal2, fitness2, 0, 20), (DecoDecimalDoble, fitness3, -100, 100)] 
+    ejemplos = [(DecoDecimal1, fitness1, -512, 512),(DecoDecimal2, fitness2, 0, 20), (DecoDecimalDoble, fitness3, -100, 100)] 
 
-    #Cambiar esta variable para cambiar de ecuacion
-    #Para ec=0 y ec=1 cambiar los extremos [a,b] de la funcion DecoDecimal
-    #TODO: pensar una forma mas comoda de cambiar entre ecuaciones
+    #Cambiar esta variable para cambiar de ecuacion ejemplo
     # Numero de la ecuacion usada (0,1,2)
     ec = 2
 
     #Funcion de decodificacion y fitness a usar
-    deco = datos[ec][0]
-    fitn = datos[ec][1]
-    a = datos[ec][2]
-    b = datos[ec][3]
+    deco = ejemplos[ec][0]
+    fitn = ejemplos[ec][1]
+    a = ejemplos[ec][2]
+    b = ejemplos[ec][3]
 
     #Creo el controlador de la poblacion
     ga = GA(N, n, probCrossOver, probMutation, deco, fitn, maxGens)
@@ -37,39 +35,27 @@ def main():
 
 
     #------ Graficas de mejor solucion por generacion ---------
-    #TODO: El problema esta en clase GA. Lo ideal sería guardarse el X y el Y, sin importar en qué dimensiones estan.
-            #Pero no sabia cómo extraer despues la informacion en las tuplas,
-                #Por eso ahora en 'bestAgentsX' estan los mejores X
-                    #En 'bestAgentsZ' estan las mejoras salidas Y
-                        #Y en 'bestAgentsY' estan las coordenadas Y por si es en 3D
     if(ec<2):
         xs = np.linspace(a, b, 1000)
         plt.plot(xs, -fitn(xs), color='b')
-        plt.scatter(ga.bestAgentsX, ga.bestAgentsZ, color='r')
+        plt.scatter(ga.bestAgentsX, ga.bestAgentsY, color='r')
     else:
-        xs = np.linspace(-10, 10, 1000)
-        ys = np.linspace(-10, 10, 1000)
+        xs = np.linspace(-10, 10, 100)
+        ys = np.linspace(-10, 10, 100)
 
         X, Y = np.meshgrid(xs,ys)
 
         Z = -fitn((X,Y))
         
-        print(f"mejores: {ga.bestAgentsX}")
         xs_ys = reduce(separar, ga.bestAgentsX)
+
         bestXs = xs_ys[0]
         bestYs = xs_ys[1]
 
-        print(f"xs_ys: {xs_ys}")
-        print(f"xs_ys: {bestXs}")
-        print(f"xs_ys: {bestYs}")
-
-        #bestXs = ga.bestAgentsX[:,0]
-        #bestYs = ga.bestAgentsX[:,1]
-
         fig = plt.figure()
         ax = plt.axes(projection='3d')
-        ax.scatter(bestXs, bestYs, ga.bestAgentsZ, color='r')
-        ax.plot_wireframe(X, Y, Z, color='b')
+        ax.scatter(bestXs, bestYs, ga.bestAgentsY, color='r')
+        ax.plot_wireframe(X, Y, Z, color=(0.7,0.7,0.7))
 
     plt.show()
 
@@ -140,11 +126,11 @@ def DecoDecimalDoble(v, a=-100, b=100):
 
 #----- Auxiliares -------------
 def separar(x,y):
-    if type(x[0]) is int and type(y[0]) is int:
+    if type(x[0]) is np.float64 and type(y[0]) is np.float64:
         (x1,y1) = x
         (x2,y2) = y
         return ([x1,x2], [y1,y2])
-    elif type(x[0]) is list and type(y[0]) is int:
+    elif type(x[0]) is list and type(y[0]) is np.float64:
         (xs, ys) = x
         (nx, ny) = y
         xs.append(nx)

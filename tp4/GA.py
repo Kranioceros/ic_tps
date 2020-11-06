@@ -23,7 +23,6 @@ class GA:
 
         self.bestAgentsX = []
         self.bestAgentsY = []
-        self.bestAgentsZ = []
 
         self.Initialize()
 
@@ -60,17 +59,9 @@ class GA:
 
             
             best = self.f_deco(bestAgent.dna)
-            #if(len(best)>1):
-                #self.bestAgentsX.append(best[0])
-                #self.bestAgentsY.append(best[1])
-            #else:
 
             self.bestAgentsX.append(best)
-            #self.bestAgentsX = np.append(self.bestAgentsX, best)
-
-            self.bestAgentsZ.append(-self.f_fitness(self.f_deco(bestAgent.dna)))
-            #self.bestAgentsZ = np.append(self.bestAgentsZ, -self.f_fitness(self.f_deco(bestAgent.dna)))
-
+            self.bestAgentsY.append(-self.f_fitness(best))
 
             #Muestro el mejor fitness para esta generacion
             print(f"Coord Minimas: ({self.f_deco(bestAgent.dna)}, {-self.f_fitness(self.f_deco(bestAgent.dna))})")
@@ -110,6 +101,7 @@ class GA:
                 a2 = self.Picker()
 
                 #Picker ventanas
+                #TODO:sacar si no usamos picker ventanas
                 #a1 = self.PickerWindow(i, v_fitness_ord)
                 #i -= 1
                 #a2 = self.PickerWindow(i, v_fitness_ord)
@@ -132,9 +124,6 @@ class GA:
 
             #Una vez generados N agentes nuevos, reemplazo la poblacion actual
             self.population = list(newPopulation)
-
-            #print(f"Generacion {_i}")
-            #self.DebugPopulation()
 
 
     #Selecciono al "azar" un agente de toda la poblacion
@@ -164,7 +153,7 @@ class GA:
 
 
     #Seleccion de agente mediante ventanas
-    #TODO: terminarlo
+    #TODO: terminarlo o sacarlo
     def PickerWindow(self, i, v_fitness, v_idxs):
         ventana = v_fitness[0:i]
 
