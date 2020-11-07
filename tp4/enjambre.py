@@ -3,8 +3,8 @@ from particula import particula
 
 def main():
 
-    N = 100  #tamaño del enjambre
-    maxIter = 100 #cantidad maxima de iteraciones
+    N = 1000  #tamaño del enjambre
+    maxIter = 1000 #cantidad maxima de iteraciones
 
     #Distintos ejemplos para probar
     ejemplos = [(fitness1, 1, -512, 512), (fitness2, 1, 0, 20), (fitness3, 2, -100, 100)]
@@ -31,7 +31,7 @@ def main():
     #Varaibles de corte 
     bestGlobalPrevio = bestGlobalY
     bestRepetido = 0
-    maxRepetido = 10
+    maxRepetido = 100
 
 
     for _i in range(maxIter):

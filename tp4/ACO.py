@@ -1,5 +1,6 @@
 import numpy as np
 from enum import Enum
+from tqdm import tqdm
 
 class Colonia:
     # Una colonia se define por:
@@ -20,7 +21,7 @@ class Colonia:
     # Un camino es un ndarray unidimensional, con tantos elementos como vertices
     # pase el camino
     def __init__(self, n_hormigas, origen, estrategia, m_grafo,
-        f_parada, f_costo, sigma0, alfa, beta, evaporacion, q, semilla=None):
+        f_parada, f_costo, sigma0, alfa, beta, evaporacion, q, max_repet, semilla=None):
         self.n_hormigas = n_hormigas
         self.origen = origen
         self.estrategia = estrategia
@@ -31,6 +32,7 @@ class Colonia:
         self.beta = beta
         self.evaporacion = evaporacion
         self.q = q
+        self.max_repet = max_repet
 
         # Inicializamos generador de numeros
         self.rng = np.random.default_rng(semilla)
@@ -58,9 +60,9 @@ class Colonia:
         epocas_iguales = 0
         dbg = print if debug else lambda x: None
 
-        for epoca in range(max_epocas):
+        for epoca in tqdm(range(max_epocas)):
             #print(f'####################')
-            print(f'#### Epoca {epoca:4d} ####')
+            dbg(f'#### Epoca {epoca:4d} ####')
             #print(f'####################')
 
             # Matriz 3D que almacena para cada arista cuales hormigas
@@ -81,32 +83,31 @@ class Colonia:
 
                 # Mientras la hormiga no haya alcanzado su objetivo
                 while(not self.f_parada(camino[:largo_camino], self.m_grafo)):
-                    #dbg(f'Vertice actual: {vert_actual}')
+                    dbg(f'Vertice actual: {vert_actual}')
 
                     # Buscamos los vertices adyacentes no visitados
                     ady = np.flatnonzero(no_visitados)
-                    #dbg(f'Adyacentes: {ady}')
+                    dbg(f'Adyacentes: {ady}')
 
                     # Buscamos el rastro de feromonas para todas las aristas posibles
                     ferom_arista = self.m_feromonas[vert_actual, ady]
-                    #dbg(f'Feromonas en las aristas: {ferom_arista}')
+                    dbg(f'Feromonas en las aristas: {ferom_arista}')
 
                     # Calculamos la funcion de deseo para todas las aristas. Es la
                     # inversa de la distancia. Funciona siempre porque descartamos
                     # los ceros anteriormente
                     deseo_arista = 1 / (self.m_grafo[vert_actual, ady])
-                    #dbg(f'Deseo de las aristas: {deseo_arista}')
+                    dbg(f'Deseo de las aristas: {deseo_arista}')
 
                     # Calculamos las probabilidades de todas las aristas disponibles
-                    # FALTA PARAMETRO BETA
                     prob_arista = (((ferom_arista ** self.alfa) * (deseo_arista**self.beta)) /
                                 np.dot(ferom_arista ** self.alfa, deseo_arista**self.beta))
-                    #dbg(f'Probabilidad de las aristas: {prob_arista}')
+                    dbg(f'Probabilidad de las aristas: {prob_arista}')
 
                     # Seleccionamos un vertice en base a las probabilidades de su
                     # arista.
                     nuevo_vert = self.rng.choice(ady, p=prob_arista)
-                    #dbg(f'Vertice seleccionado: {nuevo_vert}')
+                    dbg(f'Vertice seleccionado: {nuevo_vert}')
 
                     # Actualizamos la posicion de la hormiga y el camino
                     vert_actual = nuevo_vert
@@ -125,6 +126,7 @@ class Colonia:
                 # Marcamos las aristas visitadas
                 idx = aristas_camino(camino[:largo_camino], self.m_grafo)
                 m_visitas[idx[0], idx[1], h] = 1
+                #m_visitas[idx[1], idx[0], h] = 1
 
             # Si los caminos son todos iguales, encontramos la solucion
             iguales = True
@@ -137,10 +139,9 @@ class Colonia:
                     break
             if (iguales):
                 epocas_iguales += 1
-                if(epocas_iguales == 10):
-                    print("Convergencia por repetición.")
-                    print(self.v_costos[0])
-                    return (self.m_caminos[0], epoca+1)
+                if(epocas_iguales == self.max_repet):
+                    dbg("Convergencia por repetición.")
+                    return (self.m_caminos[0], epoca+1, self.v_costos[0])
 
             # Evaporamos las feromonas
             self.m_feromonas = (1 - self.evaporacion) * self.m_feromonas
@@ -154,19 +155,17 @@ class Colonia:
                 delta = np.ma.array(delta, mask=np.isnan(delta))
                 self.m_feromonas += self.q * delta
             else:
-                
                 delta = 0
                 for i in range(self.N):
-                   # j = i
                     for j in range(self.N):
-                        e_booleano = np.array(m_visitas[i, j, :], dtype=bool)
+                        visitas_booleano = np.array(m_visitas[i, j, :], dtype=bool)
                        # delta += np.sum(self.q / self.v_costos[m_visitas[i, j, :]])
-                        delta = np.sum(self.q / self.v_costos[e_booleano])
+                        delta = np.sum(self.q / self.v_costos[visitas_booleano])
                         self.m_feromonas[i,j] += delta
-                        #print("mvisitas: ",m_visitas[i, j, :], "I:",i, "J:",j, "| Vcostos:" , self.v_costos, "| VcostosEvaluado:",self.v_costos[e_booleano]) 
+                        #print("mvisitas: ",m_visitas[i, j, :], "I:",i, "J:",j, "| Vcostos:" , self.v_costos, "| VcostosEvaluado:",self.v_costos[visitas_booleano]) 
                 
             
-        return (self.m_caminos, max_epocas)
+        return (self.m_caminos, max_epocas, 'N/A')
         
 def aristas_camino(p, g):
     N = p.size
