@@ -20,7 +20,7 @@ class Colonia:
     # Un camino es un ndarray unidimensional, con tantos elementos como vertices
     # pase el camino
     def __init__(self, n_hormigas, origen, estrategia, m_grafo,
-        f_parada, f_costo, sigma0, alfa, evaporacion, q, semilla=None):
+        f_parada, f_costo, sigma0, alfa, beta, evaporacion, q, semilla=None):
         self.n_hormigas = n_hormigas
         self.origen = origen
         self.estrategia = estrategia
@@ -28,6 +28,7 @@ class Colonia:
         self.f_parada = f_parada
         self.f_costo = f_costo
         self.alfa = alfa
+        self.beta = beta
         self.evaporacion = evaporacion
         self.q = q
 
@@ -35,8 +36,8 @@ class Colonia:
         self.rng = np.random.default_rng(semilla)
 
         # Vector con feromonas para cada arista
-        #self.m_feromonas = sigma0 * self.rng.random(m_grafo.shape)
-        self.m_feromonas = np.ones(m_grafo.shape, dtype=float) * 0.1
+        self.m_feromonas = sigma0 * self.rng.random(m_grafo.shape)
+        #self.m_feromonas = np.ones(m_grafo.shape, dtype=float) * 0.1
         
         # Matriz con caminos de todas las hormigas. El camino mas largo posible
         # es de tamaño `N`. Se inicializa en 0.
@@ -54,12 +55,13 @@ class Colonia:
     # Devuelve el camino al cual convergen las hormigas y el numero de ciclos
     # de busqueda. Si no convergen, devuelve la matriz de caminos.
     def ejecutar(self, max_epocas, debug=False):
+        epocas_iguales = 0
         dbg = print if debug else lambda x: None
 
         for epoca in range(max_epocas):
-            print(f'####################')
+            #print(f'####################')
             print(f'#### Epoca {epoca:4d} ####')
-            print(f'####################')
+            #print(f'####################')
 
             # Matriz 3D que almacena para cada arista cuales hormigas
             # la visitaron
@@ -97,8 +99,8 @@ class Colonia:
 
                     # Calculamos las probabilidades de todas las aristas disponibles
                     # FALTA PARAMETRO BETA
-                    prob_arista = ((ferom_arista ** self.alfa) * deseo_arista /
-                                np.dot(ferom_arista ** self.alfa, deseo_arista))
+                    prob_arista = (((ferom_arista ** self.alfa) * (deseo_arista**self.beta)) /
+                                np.dot(ferom_arista ** self.alfa, deseo_arista**self.beta))
                     #dbg(f'Probabilidad de las aristas: {prob_arista}')
 
                     # Seleccionamos un vertice en base a las probabilidades de su
@@ -131,9 +133,14 @@ class Colonia:
                     continue
                 else:
                     iguales = False
+                    epocas_iguales = 0
                     break
-            if iguales:
-                return (self.m_caminos[0], epoca+1)
+            if (iguales):
+                epocas_iguales += 1
+                if(epocas_iguales == 10):
+                    print("Convergencia por repetición.")
+                    print(self.v_costos[0])
+                    return (self.m_caminos[0], epoca+1)
 
             # Evaporamos las feromonas
             self.m_feromonas = (1 - self.evaporacion) * self.m_feromonas
@@ -147,11 +154,17 @@ class Colonia:
                 delta = np.ma.array(delta, mask=np.isnan(delta))
                 self.m_feromonas += self.q * delta
             else:
+                
                 delta = 0
                 for i in range(self.N):
+                   # j = i
                     for j in range(self.N):
-                        delta += np.sum(self.q / self.v_costos[m_visitas[i, j, :]])
-                self.m_feromonas += delta
+                        e_booleano = np.array(m_visitas[i, j, :], dtype=bool)
+                       # delta += np.sum(self.q / self.v_costos[m_visitas[i, j, :]])
+                        delta = np.sum(self.q / self.v_costos[e_booleano])
+                        self.m_feromonas[i,j] += delta
+                        #print("mvisitas: ",m_visitas[i, j, :], "I:",i, "J:",j, "| Vcostos:" , self.v_costos, "| VcostosEvaluado:",self.v_costos[e_booleano]) 
+                
             
         return (self.m_caminos, max_epocas)
         

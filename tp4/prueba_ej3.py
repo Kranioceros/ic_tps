@@ -28,10 +28,14 @@ def main():
                         [3, 50, 0, 6],
                         [50, 3, 6, 0]])
 
+    datos = np.genfromtxt("tp4/gtp4datos/gr17.csv", dtype=float, delimiter=',') 
+
+
     # La hormiga debe parar cuando se encuentre en el vertice 4
     def parada(p, _g):
         N = p.size
-        return p[N-1] == 3
+        return N == datos.shape[0]
+        #return p[N-1] == 3
 
     # El costo del camino es la suma de las distancias de las aristas
     def costo(p, g):
@@ -44,31 +48,34 @@ def main():
             # extremos de cada arista.
             idx =  np.arange(-1, 1)[:, None] + (np.arange(N-1) + 1)[None, :]
             idx = p[idx]
+  
             # Vector con las distancias de cada arista
-            d = g[idx[:, 0], idx[:, 1]]
-            return np.sum(d)
+            d = g[idx[0, :], idx[1, :]]
+ 
+            return np.sum(d)+g[p[N-1],p[0]]
 
     # Colonia(semilla=None, n_hormigas, origen, estrategia, m_grafo, f_parada, f_costo, sigma0, alfa, evaporacion):
     colonia_kwargs = {
         'n_hormigas' : 100,
-        'origen' : 0,
-        'estrategia' : EstrategiaFeromona.Local,
-        'm_grafo'    : m_grafo,
+        'origen'     : 11,
+        'estrategia' : EstrategiaFeromona.Global,
+        'm_grafo'    : datos,
         'f_parada'   : parada,
         'f_costo'    : costo,
-        'sigma0'     : 0.2,
-        'alfa'       : 0.8,
-        # Falta beta aca
-        'evaporacion': 0.3,
-        'q'          : 0.1,
-        'semilla'    : 324098475,
+        'sigma0'     : 0.01,
+        'alfa'       : 1.6,
+        'beta'       : 0,
+        'evaporacion': 0.1,
+        'q'          : 0.01,
+        'semilla'    : None,
     }
 
     colonia = Colonia(**colonia_kwargs)
 
-    (res, _epocas) = colonia.ejecutar(100, debug=True)
-
+    (res, _epocas) = colonia.ejecutar(1000, debug=False)
+    print(res)
     print(colonia.m_feromonas)
-
+    v = np.array([11, 13,  5, 14,  1,  4, 16,  7, 15,  0, 12,  6,  3,  2,  8, 10,  9])
+    print("COSTOS:" ,costo(v, datos))
 if __name__ == "__main__":
     main()
