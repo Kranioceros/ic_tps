@@ -1,0 +1,20 @@
+Hiperparametros: (aprox 1 hora)
+
+resultados_01:
+alfa = 1
+beta = 3
+hormigas = 50
+sigma0 = 0.001
+
+resultados_02:
+alfa = 5
+beta = 0
+hormigas = 50
+sigma0 = 0.001
+
+resultados_03:
+alfa = 1
+beta = 0
+hormigas = 50
+sigma0 = 0.001
+

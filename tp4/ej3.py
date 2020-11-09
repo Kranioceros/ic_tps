@@ -34,7 +34,7 @@ def main():
     #(evaporacion, q)
     pruebas = [(0.1, 0.1), (0.1, 1), (0.1, 10), (0.9, 0.1), (0.9, 1), (0.9, 10)]
     estrategias = [EstrategiaFeromona.Uniforme, EstrategiaFeromona.Local, EstrategiaFeromona.Global]
-    a_b = [(1,0), (5,0), (10,0)]
+    a_b = [(1,0), (5,0), (1,3)]
     #(tiempo, distancia, iteraciones)
     resultados = []
 
