@@ -14,17 +14,18 @@ def main():
     maxGens = 1000 #Cantidad maxima de generacion a iterar
 
     #Pares de decodificadores/fitness para cada funcion
-    ejemplos = [(DecoDecimal1, fitness1, -512, 512),(DecoDecimal2, fitness2, 0, 20), (DecoDecimalDoble, fitness3, -100, 100)] 
+    ejemplos = [(DecoDecimal1, fitness1, -512, 512, derivada1),(DecoDecimal2, fitness2, 0, 20, derivada2), (DecoDecimalDoble, fitness3, -100, 100, derivada3)] 
 
     #Cambiar esta variable para cambiar de ecuacion ejemplo
     # Numero de la ecuacion usada (0,1,2)
-    ec = 2
+    ec = 1
 
     #Funcion de decodificacion y fitness a usar
     deco = ejemplos[ec][0]
     fitn = ejemplos[ec][1]
     a = ejemplos[ec][2]
     b = ejemplos[ec][3]
+    deriv = ejemplos[ec][4]
 
     #Creo el controlador de la poblacion
     ga = GA(N, n, probCrossOver, probMutation, deco, fitn, maxGens)
@@ -39,6 +40,22 @@ def main():
         xs = np.linspace(a, b, 1000)
         plt.plot(xs, -fitn(xs), color='b')
         plt.scatter(ga.bestAgentsX, ga.bestAgentsY, color='r')
+        plt.title("Método evolutivo")
+
+        #Gradiente
+        #Numero al azar entre a y b
+        x0 = np.interp(np.random.random(), [0,1], [a,b])
+        xs_deriv = []
+        ys_deriv = []
+        lr = 0.01
+        for _i in range(1,100):
+            xs_deriv.append(x0)
+            ys_deriv.append(-fitn(x0))
+            x0 -= lr*deriv(x0)
+        plt.figure(2)
+        plt.plot(xs, -fitn(xs), color='b')
+        plt.scatter(xs_deriv, ys_deriv, color='r')
+        plt.title("Método Gradiente")
     else:
         xs = np.linspace(-10, 10, 100)
         ys = np.linspace(-10, 10, 100)
@@ -137,6 +154,15 @@ def separar(x,y):
         ys.append(ny)
         return ((xs,ys))
 
+def derivada1(x):
+    aux = np.sqrt(np.abs(x))
+    return -np.sin(aux) - (x**2*np.cos(aux))/(2*np.abs(x)*aux)
+
+def derivada2(x):
+    return 1 + 15*np.cos(3*x) - 40*np.sin(5*x)
+
+def derivada3(x):
+    pass 
 
 if __name__ == "__main__":
     main()
