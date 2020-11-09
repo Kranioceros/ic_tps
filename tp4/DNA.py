@@ -14,7 +14,6 @@ class DNA:
         self.Initialize()
 
     #Inicializar agente al azar
-    #TODO: seguro hay una forma mas eficiente de hacer un vector de 1s y 0s al azar
     def Initialize(self):
         #creo un vector con valores al azar entre -0.5 y 0.5
         self.dna = np.random.rand(self.n)-0.5
@@ -60,7 +59,6 @@ class DNA:
 
 
     #Muta al agente
-    #TODO: Se podría dividir la probabilidad de mutacion entre todos los alelos y "tirar una moneda" para cada uno
     def Mutate(self, prob, perAllele=False):
         #Distribuyo la probabilidad de mutacion entre todos los alelos
         if(perAllele):

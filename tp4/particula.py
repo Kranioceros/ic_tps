@@ -53,7 +53,6 @@ class particula:
         r2 = np.random.rand(self.dim)*0.1
 
         #Constantes de aceleracion
-        #TODO: ponerlos como parametros de la particula? o del enjambre? o dejarlos acá?
         c1 = 1
         c2 = 1
 

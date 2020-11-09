@@ -14,11 +14,11 @@ def main():
     maxGens = 1000 #Cantidad maxima de generacion a iterar
 
     #Pares de decodificadores/fitness para cada funcion
-    ejemplos = [(DecoDecimal1, fitness1, -512, 512, derivada1),(DecoDecimal2, fitness2, 0, 20, derivada2), (DecoDecimalDoble, fitness3, -100, 100, derivada3)] 
+    ejemplos = [(DecoDecimal1, fitness1, -512, 512, derivada1),(DecoDecimal2, fitness2, 0, 20, derivada2), (DecoDecimalDoble, fitness3, -100, 100, derivada3_x)] 
 
     #Cambiar esta variable para cambiar de ecuacion ejemplo
     # Numero de la ecuacion usada (0,1,2)
-    ec = 1
+    ec = 2
 
     #Funcion de decodificacion y fitness a usar
     deco = ejemplos[ec][0]
@@ -47,7 +47,7 @@ def main():
         x0 = np.interp(np.random.random(), [0,1], [a,b])
         xs_deriv = []
         ys_deriv = []
-        lr = 0.01
+        lr = 0.1
         for _i in range(1,100):
             xs_deriv.append(x0)
             ys_deriv.append(-fitn(x0))
@@ -57,8 +57,8 @@ def main():
         plt.scatter(xs_deriv, ys_deriv, color='r')
         plt.title("Método Gradiente")
     else:
-        xs = np.linspace(-10, 10, 100)
-        ys = np.linspace(-10, 10, 100)
+        xs = np.linspace(-100, 100, 100)
+        ys = np.linspace(-100, 100, 100)
 
         X, Y = np.meshgrid(xs,ys)
 
@@ -72,6 +72,26 @@ def main():
         fig = plt.figure()
         ax = plt.axes(projection='3d')
         ax.scatter(bestXs, bestYs, ga.bestAgentsY, color='r')
+        ax.plot_wireframe(X, Y, Z, color=(0.7,0.7,0.7))
+
+        #Gradiente
+        #Numero al azar entre a y b
+        x0 = np.interp(np.random.random(), [0,1], [a,b])
+        y0 = np.interp(np.random.random(), [0,1], [a,b])
+        xs_deriv = []
+        ys_deriv = []
+        zs_deriv = []
+        lr = 0.1
+        for _i in range(1,3000):
+            xs_deriv.append(x0)
+            ys_deriv.append(y0)
+            zs_deriv.append(-fitn((x0,y0)))
+            x0 -= lr*derivada3_x(x0,y0)
+            y0 -= lr*derivada3_y(x0,y0)
+
+        fig = plt.figure()
+        ax = plt.axes(projection='3d')
+        ax.scatter(xs_deriv, ys_deriv, zs_deriv, color='r')
         ax.plot_wireframe(X, Y, Z, color=(0.7,0.7,0.7))
 
     plt.show()
@@ -161,8 +181,15 @@ def derivada1(x):
 def derivada2(x):
     return 1 + 15*np.cos(3*x) - 40*np.sin(5*x)
 
-def derivada3(x):
-    pass 
+def derivada3_x(x,y):
+    aa = 10*x*np.sin(100*(x**2+y**2)**0.1) / ((x**2+y**2)**0.65)
+    bb = 0.5*x*np.sin(50*(x**2+y**2)**0.1)**2 / ((x**2+y**2)**0.75)
+    return aa + bb
+
+def derivada3_y(x,y):
+    aa = 10*y*np.sin(100*(x**2+y**2)**0.1) / ((x**2+y**2)**0.65)
+    bb = 0.5*y*np.sin(50*(x**2+y**2)**0.1)**2 / ((x**2+y**2)**0.75)
+    return aa + bb
 
 if __name__ == "__main__":
     main()

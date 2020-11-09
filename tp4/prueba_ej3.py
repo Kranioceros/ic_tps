@@ -79,24 +79,24 @@ def main():
         }
     else:
         colonia_kwargs = {
-            'n_hormigas' : 100,
+            'n_hormigas' : 33,
             'origen'     : 11,
             'estrategia' : EstrategiaFeromona.Global,
             'm_grafo'    : datos,
             'f_parada'   : parada,
             'f_costo'    : costo,
-            'sigma0'     : 0.001,
-            'alfa'       : 2,
-            'beta'       : 0,
-            'evaporacion': 0.1,
-            'q'          : 1,
-            'max_repet'  : 50,
+            'sigma0'     : 0.3,
+            'alfa'       : 1,
+            'beta'       : 3,
+            'evaporacion': 0.2,
+            'q'          : 0.98,
+            'max_repet'  : 1,
             'semilla'    : None,
         }
 
     colonia = Colonia(**colonia_kwargs)
 
-    (res, _epocas, cst) = colonia.ejecutar(100, debug=False)
+    (res, _epocas, cst) = colonia.ejecutar(1000, debug=False)
     print(f"Res: {res} | Epocas: {_epocas} | Costo: {cst}")
 
 if __name__ == "__main__":

@@ -57,7 +57,6 @@ class GA:
             #El mejor agente de esta poblacion
             bestAgent = self.population[np.argmax(v_fitness)]
 
-            
             best = self.f_deco(bestAgent.dna)
 
             self.bestAgentsX.append(best)
@@ -80,17 +79,9 @@ class GA:
                     bestFitnessPrev = bestFitnessActual
                     bestRepeated = 0
 
-            #Ordeno los fitness (solo sirve para el picker ventanas)
-            #TODO: sacar esto si no usamos picker ventanas
-            v_fitness_ord = -np.sort(-v_fitness)
-
             #Si hago elitismo me quedo con el mejor de la generacion
             if(elitismo):
                 newPopulation.append(bestAgent)
-
-            #Solo para picker ventanas
-            #TODO:sacar si no usamos picker ventanas
-            i = self.N
 
             #Itero tantas veces como agentes en una poblacion
             for _j in range(int(self.N/2)):
@@ -99,12 +90,6 @@ class GA:
                 #Eligo dos agentes al "azar"
                 a1 = self.Picker()
                 a2 = self.Picker()
-
-                #Picker ventanas
-                #TODO:sacar si no usamos picker ventanas
-                #a1 = self.PickerWindow(i, v_fitness_ord)
-                #i -= 1
-                #a2 = self.PickerWindow(i, v_fitness_ord)
 
                 #Combino los dos agentes y obtengo dos nuevos
                 (newAgent1, newAgent2) = a1.CrossOver(a2, self.probCrossOver)
@@ -150,17 +135,6 @@ class GA:
 
         #Devuelvo el agente que vació el recipiente
         return self.population[randAgent]
-
-
-    #Seleccion de agente mediante ventanas
-    #TODO: terminarlo o sacarlo
-    def PickerWindow(self, i, v_fitness, v_idxs):
-        ventana = v_fitness[0:i]
-
-        randIdx = np.random.randint(0, len(ventana))
-
-        return self.population[randIdx]
-
 
 
     #Evalúa cada agente de la poblacion con la funcion de fitness

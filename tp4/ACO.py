@@ -126,7 +126,9 @@ class Colonia:
                 # Marcamos las aristas visitadas
                 idx = aristas_camino(camino[:largo_camino], self.m_grafo)
                 m_visitas[idx[0], idx[1], h] = 1
-                #m_visitas[idx[1], idx[0], h] = 1
+
+                #Cierro el bucle
+                m_visitas[camino[largo_camino-1], camino[0]]
 
             # Si los caminos son todos iguales, encontramos la solucion
             iguales = True
@@ -165,7 +167,7 @@ class Colonia:
                         #print("mvisitas: ",m_visitas[i, j, :], "I:",i, "J:",j, "| Vcostos:" , self.v_costos, "| VcostosEvaluado:",self.v_costos[visitas_booleano]) 
                 
             
-        return (self.m_caminos, max_epocas, 'N/A')
+        return (self.m_caminos, max_epocas, min(self.v_costos))
         
 def aristas_camino(p, g):
     N = p.size
