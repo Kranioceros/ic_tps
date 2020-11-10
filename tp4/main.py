@@ -57,8 +57,8 @@ def main():
         plt.scatter(xs_deriv, ys_deriv, color='r')
         plt.title("Método Gradiente")
     else:
-        xs = np.linspace(-100, 100, 100)
-        ys = np.linspace(-100, 100, 100)
+        xs = np.linspace(-100, 100, 30)
+        ys = np.linspace(-100, 100, 30)
 
         X, Y = np.meshgrid(xs,ys)
 
@@ -72,7 +72,8 @@ def main():
         fig = plt.figure()
         ax = plt.axes(projection='3d')
         ax.scatter(bestXs, bestYs, ga.bestAgentsY, color='r')
-        ax.plot_wireframe(X, Y, Z, color=(0.7,0.7,0.7))
+        ax.plot_wireframe(X, Y, Z, color=(0.8,0.8,0.8))
+        plt.title("Método Evolutivo")
 
         #Gradiente
         #Numero al azar entre a y b
@@ -81,7 +82,7 @@ def main():
         xs_deriv = []
         ys_deriv = []
         zs_deriv = []
-        lr = 0.1
+        lr = 0.3
         for _i in range(1,3000):
             xs_deriv.append(x0)
             ys_deriv.append(y0)
@@ -92,7 +93,8 @@ def main():
         fig = plt.figure()
         ax = plt.axes(projection='3d')
         ax.scatter(xs_deriv, ys_deriv, zs_deriv, color='r')
-        ax.plot_wireframe(X, Y, Z, color=(0.7,0.7,0.7))
+        ax.plot_wireframe(X, Y, Z, color=(0.8,0.8,0.8))
+        plt.title("Método Gradiente")
 
     plt.show()
 
