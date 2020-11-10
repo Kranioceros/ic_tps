@@ -34,7 +34,7 @@ def main():
     #(evaporacion, q)
     pruebas = [(0.1, 0.1), (0.1, 1), (0.1, 10), (0.9, 0.1), (0.9, 1), (0.9, 10)]
     estrategias = [EstrategiaFeromona.Uniforme, EstrategiaFeromona.Local, EstrategiaFeromona.Global]
-    a_b = [(1,0), (5,0), (10,0)]
+    a_b = [(1,0), (5,0), (1,3)]
     #(tiempo, distancia, iteraciones)
     resultados = []
 
@@ -54,7 +54,7 @@ def main():
                     'beta'       : ab[1],
                     'evaporacion': p[0],
                     'q'          : p[1],
-                    'max_repet'  : 20,
+                    'max_repet'  : 101,
                     'semilla'    : None,
                 }
 
@@ -80,6 +80,8 @@ def main():
             for est in estrategias_str:
                 print(f"q={p[1]} | {est} | Tiempo: {resultados[idx][0]} | Costo: {resultados[idx][1]} | Iteraciones: {resultados[idx][2]}")
                 idx += 1
+            print("---------")
+        print('---------')
 
 
 if __name__ == "__main__":

@@ -1,43 +1,51 @@
 import numpy as np
-
 from DNA import DNA
+from debug import dbg
+
+#Los agentes (DNA) pueden ser cualquier objeto que necesita:
+    #En caso de ser genético:
+        #un array llamado 'dna' que tiene 'n' elementos
+        #'n' se establece en el constructor
+        #en el constructor se debe inicializar al azar el 'dna'
+        #tener definido una funcion de crossover que reciba otro agente
+        #tener una funcion de mutacion
+
 #Clase que controla el funcionamiento de algoritmo genetico
-#Cosas necesarias:
-    # f_fitness -> funcion de fitness
     # N -> tamaño de poblacion
     # n -> tamaño de cada agente
+    # probCrossOver -> probabilidad de que suceda una cruza
+    # probMutation -> probabilidad de que un agente mute
+    # f_deco -> función que pasa de genotipo a fenotipo
+    # f_fitness -> funcion de fitness
     # maxGens -> maxima cantidad de generaciones a iterar
-# tener en cuenta que cada vez que se habla de agente, se refiere a una clase DNA, que tiene un vector 'dna' de 1s y 0s
+
 class GA:
-    def __init__(self, N, n, probCrossOver, probMutation, f_deco, f_fitness, maxGens):
+    def __init__(self, N, n_var, v_precision, probCrossOver, probMutation, f_deco, f_fitness, maxGens, debugLvl=-1):
         
         self.N = N
-        self.n = n
         self.probCrossOver = probCrossOver
         self.probMutation = probMutation
         self.f_deco = f_deco
         self.f_fitness = f_fitness
         self.maxGens = maxGens
+        self.debugLvl = debugLvl
 
         self.population = []
 
-        self.bestAgentsX = []
-        self.bestAgentsY = []
-
-        self.Initialize()
+        self.Initialize(n_var, v_precision)
 
 
     #Inicializo la poblacion de N agentes al azar
-    def Initialize(self):
+    def Initialize(self, n_var, v_precision):
         #Inicializo N agentes
         for _i in range(self.N):
-           self.population.append(DNA(self.n))
+           self.population.append(DNA(n_var, v_precision))
 
 
     #Controla la logica del algoritmo genetico
     #elitismo -> quedarse con el mejor de cada generacion
     #convGen -> si durante esta cantidad seguida de genraciones se repite el mismo bestFitness -> terminar
-    def Evolve(self, elitismo=False, convGen = 10):
+    def Evolve(self, elitismo=True, convGen = 100):
 
         #Cuenta cuantas veces se repite el mejor fitness (en generaciones seguidas)
         bestRepeated = 0
@@ -59,19 +67,14 @@ class GA:
 
             best = self.f_deco(bestAgent.dna)
 
-            self.bestAgentsX.append(best)
-            self.bestAgentsY.append(-self.f_fitness(best))
-
-            #Muestro el mejor fitness para esta generacion
-            print(f"Coord Minimas: ({self.f_deco(bestAgent.dna)}, {-self.f_fitness(self.f_deco(bestAgent.dna))})")
-            #print(f"max: {np.max(v_fitness)} | mean: {np.mean(v_fitness)} | STD: {np.std(v_fitness)}")
+            dbg(f"Mejor agente generacion {_i+1}: {bestAgent.dna} | {best}", 3, self.debugLvl)
 
             #Verifico si se repite el mejor fitness
             if(bestFitnessActual == bestFitnessPrev):
                 bestRepeated += 1
                 #Si ya se repitió convGen veces -> termino
                 if(bestRepeated == convGen):
-                    print(f"Convergencia por repeticion en generacion {_i}")
+                    dbg(f"Convergencia por repeticion en generacion {_i}", 10, self.debugLvl)
                     break
             else:
                 #Verifico si el mejor actual es mejor que el anterior
@@ -84,37 +87,36 @@ class GA:
                 newPopulation.append(bestAgent)
 
             #Itero tantas veces como agentes en una poblacion
-            for _j in range(int(self.N/2)):
+            for _j in range(self.N):
 
                 #Picker recipiente
                 #Eligo dos agentes al "azar"
                 a1 = self.Picker()
                 a2 = self.Picker()
 
+                v_newAgents = []
                 #Combino los dos agentes y obtengo dos nuevos
-                (newAgent1, newAgent2) = a1.CrossOver(a2, self.probCrossOver)
+                v_newAgents = list(a1.CrossOver(a2, self.probCrossOver))
+
+                dbg(f"Hijos crossover: {len(v_newAgents)}",0,self.debugLvl)
 
                 #Muto a los agentes nuevos
-                newAgent1.Mutate(self.probMutation)
-                newAgent2.Mutate(self.probMutation)
+                for ag in v_newAgents:
+                    dbg(f"Type: {type(ag)}",0,self.debugLvl)
+                    ag.Mutate(self.probMutation)
+                    newPopulation.append(ag)
 
-                #Los agrego a la nueva poblacion
-                newPopulation.append(newAgent1)
+                dbg(f"New population: {len(newPopulation)}", 0, self.debugLvl)
 
-                #Si N es impar, en la ultima iteracion del for tengo que agregar un solo padre
-                if(len(newPopulation) == self.N):
+                if(len(newPopulation) >= self.N):
                     break
 
-                newPopulation.append(newAgent2)
+            dbg(f"Generacion actual: {bestRepeated}", 3, self.debugLvl)
 
             #Una vez generados N agentes nuevos, reemplazo la poblacion actual
-            self.population = list(newPopulation)
+            self.population = list(newPopulation[0:self.N])
 
 
-    #Selecciono al "azar" un agente de toda la poblacion
-    #Se va vaciando un recipiente de volumen 1 hasta que llegue a 0 (o menor)
-    #El agente que haga que el volumen caiga de 0 es el elegido
-    #Se usa el fitness normalizado para ir restando
     def Picker(self):
         #Comienzo con el recipiente lleno
         volume = 1.0
@@ -161,8 +163,6 @@ class GA:
         #Devuelvo el fitness solo como debug, no es necesario devolverlo
         return (v_fitness, bestFitness)
 
-
-    #Funcion debug para imprimir todos los agentes de la poblacion
     def DebugPopulation(self):
-        for i,a in enumerate(self.population):
-            print(f"Agente {i}: {a.dna}")
+        for (i,p) in enumerate(self.population):
+            dbg(f"Agente {i}: {p.dna} | fitness : {p.fitness} | norm : {p.fitnessNormalize}",3,self.debugLvl)
