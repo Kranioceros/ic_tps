@@ -7,13 +7,13 @@ def main():
     maxIter = 1000 #cantidad maxima de iteraciones
 
     #Distintos ejemplos para probar
-    ejemplos = [(fitness1, 1, -512, 512), (fitness2, 1, 0, 20), (fitness3, 2, -100, 100)]
+    ejemplos = [(error1, 1, -512, 512), (error2, 1, 0, 20), (error3, 2, -100, 100)]
 
     #Ejemplo elegido actualmente [0, 1, 2]
     ec = 2
 
-    #Variables por ejemplo (funcion de fitness, dimension del problema, minimo para x, maximo para x)
-    fit = ejemplos[ec][0]
+    #Variables por ejemplo (funcion de error, dimension del problema, minimo para x, maximo para x)
+    error = ejemplos[ec][0]
     dim = ejemplos[ec][1]
     xmin = ejemplos[ec][2]
     xmax = ejemplos[ec][3]
@@ -21,10 +21,9 @@ def main():
     #Inicializo el enjambre con particulas posicionadas al azar en el hiperespacio
     enjambre = []
     for _i in range(N):
-        enjambre.append(particula(fit, dim, xmin, xmax))
+        enjambre.append(particula(error, dim, xmin, xmax))
 
     #Mejor global
-    #TODO: inicializar de otra manera??
     bestGlobalY = 99999
     bestGlobalX = np.zeros(dim)
 
@@ -37,15 +36,14 @@ def main():
     for _i in range(maxIter):
         #Para cada particula
         for part in enjambre:
-            #Evalua su "fitness" (no es un fitness en realidad)
-            fit = part.Evaluar()
+            #Evalua su valor de error
+            val_error = part.Evaluar()
             #Actaulizo el mejor local de la particula
-            #TODO: es buen diseño separar esto de el "Evaluar"?
-            part.ActualizarMejor(fit)
+            part.ActualizarMejor(val_error)
 
             #Reviso si el performance de esta particula es mejor que el global
-            if(fit < bestGlobalY):
-                bestGlobalY = fit
+            if(val_error < bestGlobalY):
+                bestGlobalY = val_error
                 bestGlobalX = part.x
                 bestRepetido = 0
                 bestGlobalPrevio = bestGlobalY
@@ -60,9 +58,9 @@ def main():
         #Para cada particula
         for part in enjambre:
             #Actualizo posicion y velocidad
-            #TODO: primero velocidad o primero posicion??
-            part.ActualizarPosicion()
             part.ActualizarVelocidad(bestGlobalX)
+            part.ActualizarPosicion()
+            
 
     #Al converger, muestro la mejor global
     if(bestRepetido <= maxRepetido):
@@ -70,14 +68,14 @@ def main():
     print(f"Best Global X: {bestGlobalX} | Best Global Y: {bestGlobalY}")
 
 
-#------ Funciones de fitness para cada ejemplo -------------
-def fitness1(x):
+#------ Funciones de error para cada ejemplo -------------
+def error1(x):
     return -x*np.sin(np.sqrt(np.abs(x)))
 
-def fitness2(x):
+def error2(x):
     return x + 5*np.sin(3*x) + 8*np.cos(5*x)
 
-def fitness3(xy):
+def error3(xy):
     x = xy[0]
     y = xy[1]
 
