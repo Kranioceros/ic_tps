@@ -30,7 +30,7 @@ def main():
     #Varaibles de corte 
     bestGlobalPrevio = bestGlobalY
     bestRepetido = 0
-    maxRepetido = 100
+    maxRepetido = 500
 
 
     for _i in range(maxIter):
@@ -46,7 +46,7 @@ def main():
                 bestGlobalY = val_error
                 bestGlobalX = part.x
                 bestRepetido = 0
-                bestGlobalPrevio = bestGlobalY
+                #bestGlobalPrevio = bestGlobalY
 
         #Control de repeticion de mejor global (condicion de corte)
         if(bestGlobalPrevio == bestGlobalY):
@@ -60,7 +60,7 @@ def main():
             #Actualizo posicion y velocidad
             part.ActualizarVelocidad(bestGlobalX)
             part.ActualizarPosicion()
-            
+        bestGlobalPrevio = bestGlobalY    #*************************** [Axel] cambie esto 10/11 me parece que es lo correcto. Lo charlamos mañana (comente la 49)
 
     #Al converger, muestro la mejor global
     if(bestRepetido <= maxRepetido):
