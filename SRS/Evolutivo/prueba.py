@@ -1,11 +1,14 @@
 import numpy as np
 from evolutivo import GA
 
+bit1 = 30
+bit2 = 30
+bit3 = 30
+
 def main():
     evolutivo_kwargs = {
                 'N'                : 100,
-                'n_var'            : 3,
-                'v_precision'      : (5,3,4),
+                'v_var'            : (bit1, bit2, bit3),
                 'probCrossOver'    : 0.9,
                 'probMutation'     : 0.1,
                 'f_deco'           : DecoDecimal,
@@ -22,9 +25,10 @@ def main():
 def decoIdentidad(x):
     return x
 
-#Decodificador binario-decimal
+#Decodificador binario-decimal 
+# a y b son los limites inferior y superior para cada variable
 def DecoDecimal(v, a=(0,1,10), b=(20,5,15)):
-    vs = [v[0:5], v[5:8], v[8:12]]
+    vs = [v[0:bit1], v[bit1:bit1+bit2], v[bit2+bit1:bit1+bit2+bit3]]
     xs = []
 
     for (i,vi) in enumerate(vs):
@@ -45,23 +49,22 @@ def numberOfOnes(x):
 #En la tercera variable (4 bits) suma '1' por cada '1'
 def fitness_tst1(x):
     score = 0
-    for i in range(5):
+    for i in range(bit1):
         score += x[i]
-    for i in range(5,8):
+    for i in range(bit1,bit1+bit2):
         score += not(x[i])
-    for i in range(8,12):
+    for i in range(bit1+bit2,bit1+bit2+bit3):
         score += x[i]
     return score
 
 def fitness_tst2(x):
-    x1 = x[0]
-    x2 = x[1]
-    x3 = x[2]
-    esp_1 = 15
-    esp_2 = 2
-    esp_3 = 12
-    dem = (np.abs(x1-esp_1) + np.abs(x2-esp_2) + np.abs(x3-esp_3))
-    if(dem == 0): dem = 0.1
+    #numeros esperados para cada variable
+    esp_1 = 2.15
+    esp_2 = 3.53
+    esp_3 = 14.02
+
+    dem = (np.abs(x[0]-esp_1) + np.abs(x[1]-esp_2) + np.abs(x[2]-esp_3))
+    if(dem == 0): dem = 0.01
     return 1 / dem
 
 if __name__ == "__main__":

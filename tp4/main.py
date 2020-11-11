@@ -3,8 +3,6 @@ from GA import GA
 import matplotlib.pyplot as plt
 from functools import reduce
 
-#TODO: agregar lo del gradiente
-
 def main():
 
     N = 100 #Cantidad de agentes en una poblacion
@@ -18,7 +16,7 @@ def main():
 
     #Cambiar esta variable para cambiar de ecuacion ejemplo
     # Numero de la ecuacion usada (0,1,2)
-    ec = 2
+    ec = 0
 
     #Funcion de decodificacion y fitness a usar
     deco = ejemplos[ec][0]
@@ -47,7 +45,7 @@ def main():
         x0 = np.interp(np.random.random(), [0,1], [a,b])
         xs_deriv = []
         ys_deriv = []
-        lr = 0.1
+        lr = 0.01
         for _i in range(1,100):
             xs_deriv.append(x0)
             ys_deriv.append(-fitn(x0))

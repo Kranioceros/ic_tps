@@ -7,21 +7,21 @@ from debug import dbg
 # fitnessNormaliza -> fitness actual normalizado
 
 #n deberia ser:
-    # eg: n=3, precision = (10, 5, 4) -> esto serían 3 variables, de 10,5 y 4 bits
+    # eg: precision = (10, 5, 4) -> esto serían 3 variables, de 10,5 y 4 bits
 
 class DNA:
 
-    def __init__(self, n_var=1, v_precision=(20)):
+    def __init__(self, v_var=(20)):
         self.fitness = 0.0
         self.fitnessNormalize = 0.0
 
-        self.n_var = n_var
-        self.v_precision = v_precision
+        self.n_var = len(v_var)
+        self.v_var = v_var
 
         #TODO: tirar error si n_var != len(v_precision)
 
         #La cantidad de bits totales es la suma de las precisiones
-        self.n = sum(v_precision)
+        self.n = sum(v_var)
        
         self.dna = np.zeros(self.n)
 
@@ -49,8 +49,8 @@ class DNA:
         v_newChilds = []
 
         #Se crean dos hijos con la cruza
-        newChild1 = DNA(self.n_var, self.v_precision)
-        newChild2 = DNA(self.n_var, self.v_precision)
+        newChild1 = DNA(self.v_var)
+        newChild2 = DNA(self.v_var)
 
         v_newChilds.append(newChild1)
         v_newChilds.append(newChild2)
@@ -67,7 +67,7 @@ class DNA:
 
         #Limites para el punto de corte
         start = 0
-        end = self.v_precision[0]
+        end = self.v_var[0]
 
         #Por cada variable agarro desde v_precision[p-1] a v_precision[p]
         for p in range(self.n_var):
@@ -85,8 +85,8 @@ class DNA:
             #Nuevos limites para el punto de corte
             if(p >= self.n_var-1):
                 break
-            start += self.v_precision[p]
-            end += self.v_precision[p+1]
+            start += self.v_var[p]
+            end += self.v_var[p+1]
 
         return v_newChilds
 
@@ -103,7 +103,7 @@ class DNA:
 
         #Limites para el punto de corte
         start = 0
-        end = self.v_precision[0]
+        end = self.v_var[0]
 
         #Para cada variable
         for p in range(self.n_var):
@@ -115,5 +115,5 @@ class DNA:
             #Nuevos limites para el punto de corte
             if(p >= self.n_var-1):
                 break
-            start += self.v_precision[p]
-            end += self.v_precision[p+1]
+            start += self.v_var[p]
+            end += self.v_var[p+1]

@@ -20,7 +20,7 @@ from debug import dbg
     # maxGens -> maxima cantidad de generaciones a iterar
 
 class GA:
-    def __init__(self, N, n_var, v_precision, probCrossOver, probMutation, f_deco, f_fitness, maxGens, debugLvl=-1):
+    def __init__(self, N, v_var, probCrossOver, probMutation, f_deco, f_fitness, maxGens, debugLvl=-1):
         
         self.N = N
         self.probCrossOver = probCrossOver
@@ -32,14 +32,14 @@ class GA:
 
         self.population = []
 
-        self.Initialize(n_var, v_precision)
+        self.Initialize(v_var)
 
 
     #Inicializo la poblacion de N agentes al azar
-    def Initialize(self, n_var, v_precision):
+    def Initialize(self, v_var):
         #Inicializo N agentes
         for _i in range(self.N):
-           self.population.append(DNA(n_var, v_precision))
+           self.population.append(DNA(v_var))
 
 
     #Controla la logica del algoritmo genetico
@@ -67,7 +67,7 @@ class GA:
 
             best = self.f_deco(bestAgent.dna)
 
-            dbg(f"Mejor agente generacion {_i+1}: {bestAgent.dna} | {best}", 3, self.debugLvl)
+            dbg(f"Mejor agente generacion {_i+1}: {best}", 3, self.debugLvl)
 
             #Verifico si se repite el mejor fitness
             if(bestFitnessActual == bestFitnessPrev):
@@ -165,4 +165,4 @@ class GA:
 
     def DebugPopulation(self):
         for (i,p) in enumerate(self.population):
-            dbg(f"Agente {i}: {p.dna} | fitness : {p.fitness} | norm : {p.fitnessNormalize}",3,self.debugLvl)
+            dbg(f"Agente {i}: {p.dna} | fitness : {p.fitness} | norm : {p.fitnessNormalize}",1,self.debugLvl)
