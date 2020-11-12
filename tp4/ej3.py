@@ -7,7 +7,7 @@ from ACO import Colonia, EstrategiaFeromona
 
 def main():
 
-    datos = np.genfromtxt("gtp4datos/gr17.csv", dtype=float, delimiter=',') 
+    datos = np.genfromtxt("tp4/gtp4datos/gr17.csv", dtype=float, delimiter=',') 
 
     # La hormiga debe parar cuando se encuentre en el vertice 4
     def parada(p, _g):

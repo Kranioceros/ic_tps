@@ -28,11 +28,6 @@ def main():
     graficar(axs[1, 1], m_t[idx[1]], m_c[idx[1]], m_s[idx[1]], int(lens[idx[1]]),
         densidad = True, sigma = sd)
 
-    #xs = np.arange(-50, 50, step=0.01)
-    #v_t = np.array([0])
-
-    #plt.plot(xs, densidad_estudio(xs, v_t, sigma=5))
-
     plt.show()
 
 
@@ -74,6 +69,29 @@ def densidad_estudio(v_t, v_mu, sigma=1):
 def norm_estandar(x):
     isqrt_2pi = 1 / np.sqrt(2*np.pi)
     return isqrt_2pi * np.exp(-0.5 * x**2)
+
+# Devuelve (puntuacion, v_revisiones)
+def simil(v_t, v_c, v_s, f_srs):
+    v_rev = np.array(v_t.size - 1)
+    dist = 0
+    ultima_rev = 0
+    for i in range(v_rev.size):
+        r = f_srs(v_t[:i+1], v_c[i], v_s[i])
+        v_rev[i] = r
+        dist += np.abs(v_t[i] - ultima_rev)
+        ultima_rev = r
+
+    return (dist, v_rev)
+
+def srs_uniforme(historia, correctos, total):
+    # Tiempo correspondiente a la sesion actual
+    t = historia[-1]
+    return t + 24 * 60 * 60
+
+# Fitness = 0
+# Por cada schedule real (r):
+#   simil = SRS(r)
+#   fitness += simil * bondad(r)
 
 
 if __name__ == "__main__":
