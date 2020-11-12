@@ -128,7 +128,7 @@ class Colonia:
                 m_visitas[idx[0], idx[1], h] = 1
 
                 #Cierro el bucle
-                m_visitas[camino[largo_camino-1], camino[0]]
+                m_visitas[camino[largo_camino-1], camino[0], h] = 1
 
             # Si los caminos son todos iguales, encontramos la solucion
             iguales = True
