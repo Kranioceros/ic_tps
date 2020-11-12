@@ -46,9 +46,9 @@ class particula:
                 self.x[i] = self.xmax
 
     #Actualiza la velocidad actual de la particula
-    #Recive la mejor performance del enjambre para usar la componente social
+    #Recibe la mejor performance del enjambre para usar la componente social
     def ActualizarVelocidad(self, bestGlobalX):
-        #Variables de "mutacion" [0, 0.1]
+
         r1 = np.random.rand(self.dim)*0.1
         r2 = np.random.rand(self.dim)*0.1
 

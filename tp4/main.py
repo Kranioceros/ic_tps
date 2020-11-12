@@ -16,7 +16,7 @@ def main():
 
     #Cambiar esta variable para cambiar de ecuacion ejemplo
     # Numero de la ecuacion usada (0,1,2)
-    ec = 0
+    ec = 2
 
     #Funcion de decodificacion y fitness a usar
     deco = ejemplos[ec][0]
