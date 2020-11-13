@@ -5,7 +5,7 @@ from functools import reduce
 
 def main():
 
-    N = 100 #Cantidad de agentes en una poblacion
+    N = 30 #Cantidad de agentes en una poblacion
     n = 30 #Cantidad de alelos en cada agente
     probCrossOver = 0.9 #Probabilidad de que haya cruza
     probMutation = .1 #Probabilidad de que un alelo se mute
@@ -45,7 +45,7 @@ def main():
         x0 = np.interp(np.random.random(), [0,1], [a,b])
         xs_deriv = []
         ys_deriv = []
-        lr = 0.01
+        lr = 0.1
         for _i in range(1,100):
             xs_deriv.append(x0)
             ys_deriv.append(-fitn(x0))

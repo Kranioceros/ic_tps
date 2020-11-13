@@ -3,7 +3,7 @@ from particula import particula
 
 def main():
 
-    N = 1000  #tamaño del enjambre
+    N = 20  #tamaño del enjambre
     maxIter = 1000 #cantidad maxima de iteraciones
 
     #Distintos ejemplos para probar

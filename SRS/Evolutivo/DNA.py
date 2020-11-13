@@ -92,7 +92,8 @@ class DNA:
 
 
     #Muta al agente
-    def Mutate(self, prob):
+    #TODO: me parece que lo correcto es que solo un bit se mute a lo largo de todo el dna, y no una mutacion por cada variable. sin embargo ayuda a convergencia esto ultimo
+    def Mutate(self, prob, allmutate=True):
         
         # "Tiro la moneda"
         mutate = np.random.rand()
@@ -101,19 +102,24 @@ class DNA:
         if(mutate > prob):
             return
 
-        #Limites para el punto de corte
-        start = 0
-        end = self.v_var[0]
+        if(allmutate):
+            #Limites para el punto de corte
+            start = 0
+            end = self.v_var[0]
 
-        #Para cada variable
-        for p in range(self.n_var):
-            #Agarro un alelo al azar
-            randAllele = np.random.randint(start, end)
+            #Para cada variable
+            for p in range(self.n_var):
+                #Agarro un alelo al azar
+                randAllele = np.random.randint(start, end)
+
+                self.dna[randAllele] = not(self.dna[randAllele])
+                
+                #Nuevos limites para el punto de corte
+                if(p >= self.n_var-1):
+                    break
+                start += self.v_var[p]
+                end += self.v_var[p+1]
+        else:
+            randAllele = np.random.randint(0,self.dna.size)
 
             self.dna[randAllele] = not(self.dna[randAllele])
-            
-            #Nuevos limites para el punto de corte
-            if(p >= self.n_var-1):
-                break
-            start += self.v_var[p]
-            end += self.v_var[p+1]

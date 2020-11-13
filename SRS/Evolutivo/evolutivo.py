@@ -45,7 +45,7 @@ class GA:
     #Controla la logica del algoritmo genetico
     #elitismo -> quedarse con el mejor de cada generacion
     #convGen -> si durante esta cantidad seguida de genraciones se repite el mismo bestFitness -> terminar
-    def Evolve(self, elitismo=True, convGen = 100):
+    def Evolve(self, elitismo=True, brecha=.1, convGen = 100):
 
         #Cuenta cuantas veces se repite el mejor fitness (en generaciones seguidas)
         bestRepeated = 0
@@ -86,6 +86,11 @@ class GA:
             if(elitismo):
                 newPopulation.append(bestAgent)
 
+            #Brecha generacional
+            n_brecha = int(self.N*brecha)
+            for i in range(n_brecha):
+                newPopulation.append(self.population[i])
+
             #Itero tantas veces como agentes en una poblacion
             for _j in range(self.N):
 
@@ -111,7 +116,7 @@ class GA:
                 if(len(newPopulation) >= self.N):
                     break
 
-            dbg(f"Generacion actual: {bestRepeated}", 3, self.debugLvl)
+            dbg(f"Generacion actual: {_i}", 3, self.debugLvl)
 
             #Una vez generados N agentes nuevos, reemplazo la poblacion actual
             self.population = list(newPopulation[0:self.N])
