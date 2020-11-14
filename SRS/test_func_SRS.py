@@ -6,13 +6,6 @@ from matplotlib.ticker import (MultipleLocator, FuncFormatter,
 from utils import graficar, PrLogistica, biseccion
 
 def main():
-    # Cargamos datos
-    m_t = np.load('SRS/data/times.npy')
-    m_c = np.load('SRS/data/correct.npy')
-    m_s = np.load('SRS/data/seen.npy')
-    lens = np.load('SRS/data/len_schedule.npy')
-    lens = lens.astype(int)
-
     # Datos de revisiones y parametros de SRS
     ts_revs = np.array([0,3600*24,3600*48,3600*72, 3600*96])
     c = np.ones(5) * 4
@@ -32,13 +25,14 @@ def main():
         'ts':  ts_revs,
     }
 
-
+    # Evaluamos funcion de probabilidad usada en el SRS
     t_aux = np.linspace(0, 3600*24*15, 100)
     pr_vector = np.zeros(t_aux.size)
     for i, t in enumerate(t_aux):
         pr_vector[i] = PrLogistica(**prlogistica_kwargs, t = t, nvent=nvent)
 
-    # Probamos entrar el t con cierta probabilidad
+    # Evaluamos obtener el valor del dominio en base a la imagen usando
+    # biseccion
     (t_p, p) = biseccion(0.80, 0.1, t_aux, lambda t: PrLogistica(**prlogistica_kwargs, t=t, nvent=nvent), max_iter=10)
     print(f't: {t_p}, p: {p}')
     

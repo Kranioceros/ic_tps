@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, FuncFormatter,
                                AutoMinorLocator)
 
+from srs import SRS
+
 def graficar(ax, ts, cs, ss, n, densidad=False, sigma=1.0):
     mask_cs = np.logical_and((cs == ss),(cs >= 0))
     mask_is = np.logical_and(np.logical_not(mask_cs),(cs >= 0))
@@ -42,27 +44,41 @@ def norm_estandar(x):
     return isqrt_2pi * np.exp(-0.5 * x**2)
 
 # Devuelve (puntuacion, v_revisiones)
-def simil(v_t, v_c, v_s, f_srs):
-    v_rev = np.array(v_t.size - 1)
+def simil(ts, cs, ss, srs: SRS, k=3):
+    v_rev = np.zeros(ts.size - 1)
     dist = 0
     ultima_rev = 0
     for i in range(v_rev.size):
-        r = f_srs(v_t[:i+1], v_c[i], v_s[i])
+        r = srs.prox_revision(ts[:i+1], cs[i], ss[i])
         v_rev[i] = r
-        dist += np.abs(v_t[i] - ultima_rev)
+        dist += np.abs(ts[i] - ultima_rev)
         ultima_rev = r
 
-    return (dist, v_rev)
+    return (np.exp(-k*dist/ts.size), v_rev)
 
 def srs_uniforme(historia, correctos, total):
     # Tiempo correspondiente a la sesion actual
     t = historia[-1]
     return t + 24 * 60 * 60
 
-def bondad(ts, m):
-    ti = np.where(ts < ts[-1] - 6*3600)[-1]
-    n = -np.log(m)/(ts[-1] - ts[ti])
-    return n
+def bondad(ts, m, alfa=0.4, max_rev = 6*3600):
+    ti = np.flatnonzero(ts < ts[-1] - max_rev)[-1]
+    #print(f'ti: {ti}')
+    #print(f't_n: {ts[-1]}')
+    #print(f't_(n-1): {ts[ti]}')
+    #print(f't_n - t_(n-1): {ts[-1] - ts[ti]}')
+    return (m[-1] * (ts[-1] - ts[ti])) ** alfa
+
+def fitness(ts, cs, ss, srs: SRS, return_revs=False):
+    (similitud, v_rev) = simil(ts, cs, ss, srs)
+    print(f'simil: {similitud}')
+    buenitud = bondad(ts, cs / ss)
+    print(f'bondad: {buenitud}')
+    aptitud = buenitud * similitud
+    if return_revs:
+       return (v_rev, aptitud) 
+    else:
+       return aptitud
 
 def PrLogistica(a,d,phi,psi,c,n,ts,t,nvent=5):
     ts = ts - ts[-1] - t 
