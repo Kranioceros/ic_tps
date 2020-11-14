@@ -139,3 +139,7 @@ cython_debug/
 
 # VS Code folder
 .vscode
+
+# Datos a ignorar
+SRS/data/duolingo.csv
+SRS/data/duolingo.db
