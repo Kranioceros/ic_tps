@@ -3,35 +3,6 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, FuncFormatter,
                                AutoMinorLocator)
 
-def main():
-    m_t = np.load('SRS/data/times.npy')
-    m_c = np.load('SRS/data/correct.npy')
-    m_s = np.load('SRS/data/seen.npy')
-    lens = np.load('SRS/data/len_schedule.npy')
-
-    _fig, axs = plt.subplots(2, 2)
-
-    idx = np.random.choice(np.arange(1000, 1200), size=2)
-
-    # Aprox. el 95% de los valores de una distribucion normal se encuentran en
-    # el intervalo [u-2sd; u+2sd]. El 95% del area de cada revision se encuentra
-    # en un intervalo de ancho `horas`
-    horas = 6
-    sd = (horas * 60 * 60) / 2
-
-    ## Sesiones de estudio
-    graficar(axs[0, 0], m_t[idx[0]], m_c[idx[0]], m_s[idx[0]], int(lens[idx[0]]))
-    graficar(axs[1, 0], m_t[idx[1]], m_c[idx[1]], m_s[idx[1]], int(lens[idx[1]]))
-    ## Densidad de estudio
-    graficar(axs[0, 1], m_t[idx[0]], m_c[idx[0]], m_s[idx[0]], int(lens[idx[0]]),
-        densidad = True, sigma = sd)
-    graficar(axs[1, 1], m_t[idx[1]], m_c[idx[1]], m_s[idx[1]], int(lens[idx[1]]),
-        densidad = True, sigma = sd)
-
-    plt.show()
-
-
-
 def graficar(ax, ts, cs, ss, n, densidad=False, sigma=1.0):
     mask_cs = np.logical_and((cs == ss),(cs >= 0))
     mask_is = np.logical_and(np.logical_not(mask_cs),(cs >= 0))
@@ -88,40 +59,52 @@ def srs_uniforme(historia, correctos, total):
     t = historia[-1]
     return t + 24 * 60 * 60
 
-# Fitness = 0
-# Por cada schedule real (r):
-#   simil = SRS(r)
-#   fitness += simil * bondad(r)
-
 def bondad(ts, m):
     ti = np.where(ts < ts[-1] - 6*3600)[-1]
     n = -np.log(m)/(ts[-1] - ts[ti])
     return n
 
-def PrLogistica(a,d,phi,psi,c,n, ts, t):
-    #ts, desde el primer tiempo, hasta el tiempo en el q estamos parados
+def PrLogistica(a,d,phi,psi,c,n,ts,t,nvent=5):
+    ts = ts - ts[-1] - t 
 
-    m_matriz = np.zeros((5,len(ts)))
-
-    ts = -ts - t
-    m_matriz[0] = ts >= -6*3600
-    m_matriz[1] = ts >= -12*3600
-    m_matriz[2] = ts >= -24*3600                #esto podriamos evolucionarlo
-    m_matriz[3] = ts >= -168*3600
-    m_matriz[4] = ts >= -336*3600
+    ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
+    ancho_ventanas *= (24 * 3600)
+    
+    # Calculamos el tamanio de las ventanas
+    m_mask = np.zeros((nvent,len(ts)))
+    m_mask[0] = ts >= -ancho_ventanas[0]
+    for i in range(1, nvent):
+        m_mask[i] = ts >= -ancho_ventanas[i]
 
     def sigmoid(x):
-        return 2*np.reciprocal(1 + np.exp(-x)) 
+        return np.reciprocal(1 + np.exp(-x))
 
     acum = 0
-    for i,m_i in enumerate(m_matriz):
+
+    for i, m_i in enumerate(m_mask):
         sum_de_phi = phi[i]*np.log(1+np.sum(c*m_i))
         sum_de_psi = psi[i]*np.log(1+np.sum(n*m_i))
         resta = sum_de_phi - sum_de_psi
-        acum +=  resta 
+        acum += resta 
     
-    Pr = sigmoid(a-d+ acum )
+    Pr = sigmoid(a - d + acum)
     return Pr
 
-if __name__ == "__main__":
-    main()
+# Esto funciona para funciones `f` estrictamente decrecientes.
+# Devuelve valor mas cercano a x encontrado e imagen de la funcion
+# en ese punto
+def biseccion(x, tol, v_intervalo, f, max_iter=10):
+    N = v_intervalo.size
+    idx = int(N / 2)
+    y = f(v_intervalo[idx])
+    err = x - y
+    it = 0
+    while it < max_iter and abs(err) > tol:
+        if err < 0:
+            idx += int((N - idx) / 2)
+        else:
+            idx -= int(idx / 2)
+        it += 1
+        y = f(v_intervalo[idx])
+        err = x - y
+    return (v_intervalo[idx], y)
