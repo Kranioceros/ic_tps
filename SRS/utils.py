@@ -25,7 +25,6 @@ def graficar(ax, ts, cs, ss, n, densidad=False, sigma=1.0):
         ax.stem(ts[mask_is], np.ones(len(ts[mask_is])), 'r', linefmt="r-",
                 markerfmt="rx", basefmt="black")
     else:
-        print('Laburando...')
         xs = np.linspace(0, max_dia*seg_dia, 50000)
         ys = densidad_estudio(xs, ts, sigma)
         ax.plot(xs, ys)
@@ -50,16 +49,12 @@ def simil(ts, cs, ss, srs: SRS, k=3):
     for i in range(rs.size-1):
         rs[i+1] = srs.prox_revision(ts[:i+1], cs[i], ss[i])
     
-    #print(f"rs: {rs}")
-    #print(f"ts: {ts}")
+    #print(f"rs: {rs / 3600}")
+    #print(f"ts: {ts / 3600}")
     resta = np.abs(ts - rs)
     dist = np.sum(resta)
-    #print(f"dist: {dist}")
-
-    # Pensar si esta bien que este acotado entre 0 y 1 
-    # Si son iguales tiene sentido que sea 1
-    # Pero cuando dejan de ser iguales se convierte en una medida de qué tan iguales son
-    # Esa medida no deberia de estar acotada
+    #print(f'resta: {resta / 3600}')
+    #print(f'dist: {dist / 3600}')
     return (np.exp(-k*dist/ts.size), rs)
 
 def srs_uniforme(historia, correctos, total):
@@ -75,11 +70,12 @@ def bondad(ts, m, alfa=0.4, max_rev = 6*3600):
     #print(f't_n - t_(n-1): {ts[-1] - ts[ti]}')
     return (m[-1] * (ts[-1] - ts[ti])) ** alfa
 
-def fitness(ts, cs, ss, srs: SRS, return_revs=False):
-    (similitud, v_rev) = simil(ts, cs, ss, srs)
-    print(f'simil: {similitud}')
-    buenitud = bondad(ts, cs / ss)
-    print(f'bondad: {buenitud}')
+def fitness(ts, cs, ss, srs: SRS, return_revs=False, interrev=3600*6,
+    alfa=0.4, k=1/(3600*24)):
+    (similitud, v_rev) = simil(ts, cs, ss, srs, k=k)
+    #print(f'simil: {similitud}')
+    buenitud = bondad(ts, cs / ss, alfa=alfa, max_rev=interrev)
+    #print(f'bondad: {buenitud}')
     aptitud = buenitud * similitud
     if return_revs:
        return (v_rev, aptitud) 

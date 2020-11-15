@@ -14,7 +14,7 @@ def main():
     lens = lens.astype(int)
 
     # Armamos un schedule, parecido a un uniforme
-    ts_revs = np.array([0,3600*36,3600*50,3600*72, 3600*84])
+    ts_revs = np.array([0,3600*36,3600*50,3600*72, 3600*84]) * 10
     c = np.ones(5) * 4
     n = np.ones(5) * 8
     nvent = 5
