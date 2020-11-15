@@ -45,16 +45,22 @@ def norm_estandar(x):
 
 # Devuelve (puntuacion, v_revisiones)
 def simil(ts, cs, ss, srs: SRS, k=3):
-    v_rev = np.zeros(ts.size - 1)
-    dist = 0
-    ultima_rev = 0
-    for i in range(v_rev.size):
-        r = srs.prox_revision(ts[:i+1], cs[i], ss[i])
-        v_rev[i] = r
-        dist += np.abs(ts[i] - ultima_rev)
-        ultima_rev = r
+    rs = np.zeros(ts.size)
+    rs[0] = 0
+    for i in range(rs.size-1):
+        rs[i+1] = srs.prox_revision(ts[:i+1], cs[i], ss[i])
+    
+    #print(f"rs: {rs}")
+    #print(f"ts: {ts}")
+    resta = np.abs(ts - rs)
+    dist = np.sum(resta)
+    #print(f"dist: {dist}")
 
-    return (np.exp(-k*dist/ts.size), v_rev)
+    # Pensar si esta bien que este acotado entre 0 y 1 
+    # Si son iguales tiene sentido que sea 1
+    # Pero cuando dejan de ser iguales se convierte en una medida de qué tan iguales son
+    # Esa medida no deberia de estar acotada
+    return (np.exp(-k*dist/ts.size), rs)
 
 def srs_uniforme(historia, correctos, total):
     # Tiempo correspondiente a la sesion actual
