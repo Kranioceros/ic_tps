@@ -3,11 +3,11 @@ from evolutivo import GA
 
 n_bits = 30
 
-var_bits = (n_bits,n_bits,n_bits,n_bits,n_bits,n_bits,n_bits,n_bits,n_bits,n_bits)
-var_espr = (1,2,3,4,5,6,7,8,9,10)
-var_lims = (0, n_bits, n_bits*2, n_bits*3, n_bits*4, n_bits*5, n_bits*6, n_bits*7, n_bits*8, n_bits*9, n_bits*10)
-var_min = (0, 0, 0, 0, 0,0,0,0,0,0)
-var_max = (100,100,100,100,100,100,100,100,100,100)
+var_bits = np.ones(10, dtype=int)*n_bits
+var_espr = np.array([1,2,3,4,5,6,7,8,9,10], dtype=int)
+var_lims = np.array([0, n_bits, n_bits*2, n_bits*3, n_bits*4, n_bits*5, n_bits*6, n_bits*7, n_bits*8, n_bits*9, n_bits*10], dtype=int)
+var_min = np.zeros(10, dtype=int)
+var_max = np.ones(10, dtype=int)*100
 
 def main():
     evolutivo_kwargs = {
@@ -22,7 +22,7 @@ def main():
     }
 
     ga = GA(**evolutivo_kwargs)
-    ga.Evolve()
+    ga.Evolve(elitismo=True, brecha=.2, convGen=50)
     ga.DebugPopulation()
 
 

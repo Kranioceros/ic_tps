@@ -132,7 +132,7 @@ class GA:
         #Indice del agente elegido
         randAgent = 0
         #Mientras que no se vacie el recipiente y estemos dentro del beSafe
-        while(volume>=0 and beSafe < 1000):
+        while(volume>=0 and beSafe < 100):
             #agarro agente al azar
             randAgent = np.random.randint(0,self.N)
 
@@ -144,6 +144,17 @@ class GA:
         #Devuelvo el agente que vació el recipiente
         return self.population[randAgent]
 
+    #Agarra 'cant' agentes y elige el mejor de esos
+    def PickerCompetencia(self, cant):
+        rand_idx = np.random.randint(0,self.N)
+        best_agent = rand_idx
+
+        for _i in range(cant-1):
+            rand_idx = np.random.randint(0,self.N)
+            if(self.population[rand_idx].fitness > self.population[best_agent].fitness):
+                best_agent = rand_idx
+
+        return self.population[best_agent]
 
     #Evalúa cada agente de la poblacion con la funcion de fitness
     #Tambien normaliza todos los fitness
@@ -157,14 +168,26 @@ class GA:
             v_fitness[i] = self.f_fitness(self.f_deco(a.dna))
             a.fitness = v_fitness[i]
 
-        #Busco el mejor fitness
-        bestFitness = np.max(v_fitness) #'b'
-        worstFitness = np.min(v_fitness) #'a'
+        #Si el fitness puede ser negativo, usar lo siguiente:
+            #Busco el mejor fitness
+            #bestFitness = np.max(v_fitness) #'b'
+            #worstFitness = np.min(v_fitness) #'a'
 
-        #Mapeo [a,b] -> [0,1]
-        #Normalizo los fitness de cada agente con respecto al fitness maximo
+            #Mapeo [a,b] -> [0,1]
+            #Normalizo los fitness de cada agente con respecto al fitness maximo
+            #for a in self.population:
+            #    a.fitnessNormalize = (a.fitness-worstFitness)/(bestFitness-worstFitness)
+
+        #Si solo puede ser positivo el fitness, usar lo siguiente:
+        #Busco el mejor
+        bestFitness = np.max(v_fitness)
+
+        #Calculo la suma de todos los fitness
+        suma_fitness = np.sum(v_fitness)
+
+        #Calculo la probabilidad de cada agente con respecto a la suma total
         for a in self.population:
-            a.fitnessNormalize = (a.fitness-worstFitness)/(bestFitness-worstFitness)
+            a.fitnessNormalize = a.fitness / suma_fitness
 
         #Devuelvo el fitness solo como debug, no es necesario devolverlo
         return (v_fitness, bestFitness)
