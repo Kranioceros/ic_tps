@@ -5,7 +5,7 @@ from matplotlib.ticker import (MultipleLocator, FuncFormatter,
 
 from srs import SRS
 
-def graficar(ax, ts, cs, ss, n, densidad=None, accum=None, sigma=1.0, v_x=None):
+def graficar(ax, ts, cs, ss, n, dens=None, accum=None, sigma=1.0):
     mask_cs = np.logical_and((cs == ss),(cs >= 0))
     mask_is = np.logical_and(np.logical_not(mask_cs),(cs >= 0))
 
@@ -19,17 +19,27 @@ def graficar(ax, ts, cs, ss, n, densidad=None, accum=None, sigma=1.0, v_x=None):
     ax.set_xlim(right=max_dia*seg_dia)
     ax.vlines(ticks, 0, 1, colors=['grey'], linestyles='dotted')
 
-    if densidad is not None and accum is not None:
+    if dens is None and accum is None:
         ax.stem(ts[mask_cs], np.ones(len(ts[mask_cs])), 'b', linefmt="b-",
                 markerfmt="bo", basefmt="black")
         ax.stem(ts[mask_is], np.ones(len(ts[mask_is])), 'r', linefmt="r-",
                 markerfmt="rx", basefmt="black")
-    elif densidad is not None:
-        v_x = cs if densidad == "CS" else ss
+    elif dens is not None:
+        v_x = cs if dens.lower() == "cs" else ss
         xs = np.linspace(0, max_dia*seg_dia, 50000)
+        ys = densidad(xs, ts[:n], v_x[:n], sigma)
 
-        ys = densidad(xs, ts, sigma)
+        print(f'total revisiones: {np.sum(cs[:n])}')
+        print(f'ys_integral: {np.trapz(ys, xs)}')
+
+        ax.plot(xs, sigma*ys) # Fines esteticos
+    elif accum is not None:
+        v_x = cs if accum.lower() == "cs" else ss
+        xs = np.linspace(0, max_dia*seg_dia, 50000)
+        ys = integral_acumulada(xs, ts[:n], v_x[:n], sigma)
+
         ax.plot(xs, ys)
+
 
 # `v_t`: tiempos en los que se quiere evaluar la funcion
 # `v_mu`: medias correspondientes a cada Gaussiana. Estas medias son
@@ -37,12 +47,12 @@ def graficar(ax, ts, cs, ss, n, densidad=None, accum=None, sigma=1.0, v_x=None):
 # `sigma` es la desviacion estandar. Es unica para todas.
 def densidad(v_t, v_mu, v_x, sigma=1):  
 
-    gaussianas = np.apply_along_axis(norm_estandar, 1, (v_t[None, :] - v_mu[:, None]) / sigma)
-    gaussianas =  gaussianas * v_x[:,None]
+    gaussianas = np.apply_along_axis(norm_estandar, 1, (v_t[None, :] - v_mu[:, None]) / sigma) / sigma
+    gaussianas = gaussianas * v_x[:,None]
     return np.sum(gaussianas, 0)
 
 def integral_acumulada(v_t, v_mu, v_x, sigma=1):
-    dens = densidad(v_t, v_mu, v_x, sigma=1)
+    dens = densidad(v_t, v_mu, v_x, sigma)
     accum = np.zeros(v_t.shape)
     for i,_t in enumerate(v_t):
         accum[i] = np.trapz(dens[:i],v_t[:i])

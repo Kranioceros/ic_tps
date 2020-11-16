@@ -15,13 +15,12 @@ def main():
     ss = m_s[sched]
     n = lens[sched]
 
-    graficar(axs[0], m_t[sched], cs, ss, n, densidad=False, accum=False, sigma=1.0)
+    graficar(axs[0], m_t[sched], cs, ss, n, dens=None, accum=None)
+    graficar(axs[1], m_t[sched], cs, ss, n, dens='CS', accum=None, sigma=1.5*3600)
+    graficar(axs[2], m_t[sched], cs, ss, n, dens=None, accum='CS', sigma=1.5*3600)
+    graficar(axs[3], m_t[sched], cs, ss, n, dens='SS', accum=None, sigma=1.5*3600)
+    graficar(axs[4], m_t[sched], cs, ss, n, dens=None, accum='SS', sigma=1.5*3600)
 
-    intacum = integral_acumulada(t, m_t[sched], cs, sigma=1)
-    dens = densidad(t,ts,cs,sigma=1)
-    print("ACCUM",intacum)
-    axs[0].plot(t,dens)
-    axs[1].plot(t,intacum)
     plt.show()
 
 if __name__ == "__main__":
