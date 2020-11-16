@@ -1,5 +1,5 @@
 import numpy as np
-from debug import dbg
+from Evolutivo.debug import dbg
 #Clase que define a un agente para usar en un algoritmo genetico
 # n-> cantidad de alelos
 # dna -> array de 1s y 0s
@@ -15,13 +15,13 @@ class DNA:
         self.fitness = 0.0
         self.fitnessNormalize = 0.0
 
-        self.n_var = len(v_var)
+        self.n_var = v_var.size
         self.v_var = v_var
 
         #TODO: tirar error si n_var != len(v_precision)
 
         #La cantidad de bits totales es la suma de las precisiones
-        self.n = sum(v_var)
+        self.n = np.sum(v_var)
        
         self.dna = np.zeros(self.n)
 

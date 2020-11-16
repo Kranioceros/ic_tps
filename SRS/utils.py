@@ -82,30 +82,44 @@ def fitness(ts, cs, ss, srs: SRS, return_revs=False, interrev=3600*6,
     else:
        return aptitud
 
-def PrLogistica(a,d,phi,psi,c,n,ts,t,nvent=5):
-    ts = ts - ts[-1] - t 
+def sigmoid(x):
+    return np.reciprocal(1 + np.exp(-x))
 
-    ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
-    ancho_ventanas *= (24 * 3600)
-    
-    # Calculamos el tamanio de las ventanas
+def crearMascaras(ts, ancho_ventanas, nvent):
     m_mask = np.zeros((nvent,len(ts)))
     m_mask[0] = ts >= -ancho_ventanas[0]
     for i in range(1, nvent):
         m_mask[i] = ts >= -ancho_ventanas[i]
 
-    def sigmoid(x):
-        return np.reciprocal(1 + np.exp(-x))
+    return m_mask
 
-    acum = 0
+def PrLogistica(a,d,phi,psi,m_3d,sched,t_actual,nvent,ancho_ventanas):
+    #ts = ts - ts[-1] - t 
 
-    for i, m_i in enumerate(m_mask):
-        sum_de_phi = phi[i]*np.log(1+np.sum(c*m_i))
-        sum_de_psi = psi[i]*np.log(1+np.sum(n*m_i))
-        resta = sum_de_phi - sum_de_psi
-        acum += resta 
+    #ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
+    #ancho_ventanas *= (24 * 3600)
+
+    # Calculamos el tamanio de las ventanas
+    #m_mask = np.zeros((nvent,len(ts)))
+    #m_mask[0] = ts >= -ancho_ventanas[0]
+    #for i in range(1, nvent):
+    #    m_mask[i] = ts >= -ancho_ventanas[i]
+    #m_mask = crearMascaras(ts, ancho_ventanas, nvent)
+
+    #acum = 0
+
+    #for i, m_i in enumerate(m_mask):
+    #    sum_de_phi = phi*np.log(1+np.sum(c*m_i))
+    #    sum_de_psi = psi[i]*np.log(1+np.sum(n*m_i))
+    #    resta = sum_de_phi - sum_de_psi
+    #    acum += resta 
     
-    Pr = sigmoid(a - d + acum)
+    sum_phi = np.dot(phi, m_3d[sched, t_actual, :nvent])
+    sum_psi = np.dot(psi, m_3d[sched, t_actual, nvent:])
+    resta = sum_phi - sum_psi
+
+    Pr = sigmoid(a - d + resta)
+
     return Pr
 
 # Esto funciona para funciones `f` estrictamente decrecientes.

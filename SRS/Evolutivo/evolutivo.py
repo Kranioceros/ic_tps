@@ -1,6 +1,6 @@
 import numpy as np
-from DNA import DNA
-from debug import dbg
+from Evolutivo.DNA import DNA
+from Evolutivo.debug import dbg
 
 #Los agentes (DNA) pueden ser cualquier objeto que necesita:
     #En caso de ser genético:
@@ -68,6 +68,7 @@ class GA:
             best = self.f_deco(bestAgent.dna)
 
             dbg(f"Mejor agente generacion {_i+1}: {best}", 3, self.debugLvl)
+            dbg(f"Mejor Fitness {_i+1}: {bestFitnessActual}", 3, self.debugLvl)
 
             #Verifico si se repite el mejor fitness
             if(bestFitnessActual == bestFitnessPrev):
