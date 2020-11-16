@@ -5,7 +5,7 @@ from matplotlib.ticker import (MultipleLocator, FuncFormatter,
 
 from srs import SRS
 
-def graficar(ax, ts, cs, ss, n, densidad=False, sigma=1.0):
+def graficar(ax, ts, cs, ss, n, densidad=None, accum=None, sigma=1.0, v_x=None):
     mask_cs = np.logical_and((cs == ss),(cs >= 0))
     mask_is = np.logical_and(np.logical_not(mask_cs),(cs >= 0))
 
@@ -19,23 +19,34 @@ def graficar(ax, ts, cs, ss, n, densidad=False, sigma=1.0):
     ax.set_xlim(right=max_dia*seg_dia)
     ax.vlines(ticks, 0, 1, colors=['grey'], linestyles='dotted')
 
-    if not densidad:
+    if densidad is not None and accum is not None:
         ax.stem(ts[mask_cs], np.ones(len(ts[mask_cs])), 'b', linefmt="b-",
                 markerfmt="bo", basefmt="black")
         ax.stem(ts[mask_is], np.ones(len(ts[mask_is])), 'r', linefmt="r-",
                 markerfmt="rx", basefmt="black")
-    else:
+    elif densidad is not None:
+        v_x = cs if densidad == "CS" else ss
         xs = np.linspace(0, max_dia*seg_dia, 50000)
-        ys = densidad_estudio(xs, ts, sigma)
+
+        ys = densidad(xs, ts, sigma)
         ax.plot(xs, ys)
 
 # `v_t`: tiempos en los que se quiere evaluar la funcion
 # `v_mu`: medias correspondientes a cada Gaussiana. Estas medias son
 #         iguales al tiempo de cada sesion
 # `sigma` es la desviacion estandar. Es unica para todas.
-def densidad_estudio(v_t, v_mu, sigma=1):
+def densidad(v_t, v_mu, v_x, sigma=1):  
+
     gaussianas = np.apply_along_axis(norm_estandar, 1, (v_t[None, :] - v_mu[:, None]) / sigma)
-    return np.clip(0, 1, np.sum(gaussianas, 0))
+    gaussianas =  gaussianas * v_x[:,None]
+    return np.sum(gaussianas, 0)
+
+def integral_acumulada(v_t, v_mu, v_x, sigma=1):
+    dens = densidad(v_t, v_mu, v_x, sigma=1)
+    accum = np.zeros(v_t.shape)
+    for i,_t in enumerate(v_t):
+        accum[i] = np.trapz(dens[:i],v_t[:i])
+    return accum
 
 # x puede ser un vector o un escalar
 def norm_estandar(x):

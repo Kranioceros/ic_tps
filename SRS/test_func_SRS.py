@@ -72,8 +72,8 @@ def main():
     ax.plot(t_aux, pr_vector)
 
     ax.scatter(t_p, p, color='red')
-    caca = m_t[0, m_t[0,:]<t_aux[50]]
-    ax.scatter(caca, np.ones(caca.size)*0.5, color='g')
+    revisiones_aux = m_t[0, m_t[0,:]<t_aux[50]]
+    ax.scatter(revisiones_aux, np.ones(revisiones_aux.size)*0.5, color='g')
 
     plt.show()
 
