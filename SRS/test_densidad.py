@@ -15,11 +15,13 @@ def main():
     ss = m_s[sched]
     n = lens[sched]
 
-    graficar(axs[0], m_t[sched], cs, ss, n, dens=None, accum=None)
-    graficar(axs[1], m_t[sched], cs, ss, n, dens='CS', accum=None, sigma=1.5*3600)
-    graficar(axs[2], m_t[sched], cs, ss, n, dens=None, accum='CS', sigma=1.5*3600)
-    graficar(axs[3], m_t[sched], cs, ss, n, dens='SS', accum=None, sigma=1.5*3600)
-    graficar(axs[4], m_t[sched], cs, ss, n, dens=None, accum='SS', sigma=1.5*3600)
+    cant_n = 5
+
+    graficar(axs[0], m_t[sched], cs, ss, cant_n, dens=None, accum=None)
+    graficar(axs[1], m_t[sched], cs, ss, cant_n, dens='CS', accum=None, sigma=1*3600)
+    graficar(axs[2], m_t[sched], cs, ss, cant_n, dens=None, accum='CS', sigma=1*3600)
+    graficar(axs[3], m_t[sched], cs, ss, cant_n, dens='SS', accum=None, sigma=1*3600)
+    graficar(axs[4], m_t[sched], cs, ss, cant_n, dens=None, accum='SS', sigma=1*3600)
 
     plt.show()
 

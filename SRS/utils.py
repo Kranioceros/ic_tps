@@ -35,7 +35,7 @@ def graficar(ax, ts, cs, ss, n, dens=None, accum=None, sigma=1.0):
         ax.plot(xs, sigma*ys) # Fines esteticos
     elif accum is not None:
         v_x = cs if accum.lower() == "cs" else ss
-        xs = np.linspace(0, max_dia*seg_dia, 50000)
+        xs = np.linspace(0, max_dia*seg_dia, 5000)
         ys = integral_acumulada(xs, ts[:n], v_x[:n], sigma)
 
         ax.plot(xs, ys)
@@ -59,9 +59,12 @@ def integral_acumulada(v_t, v_mu, v_x, sigma=1):
     return accum
 
 # x puede ser un vector o un escalar
+# nos quedamos con la mitad de la derecha, 
+# preservando el area=1
 def norm_estandar(x):
     isqrt_2pi = 1 / np.sqrt(2*np.pi)
-    return isqrt_2pi * np.exp(-0.5 * x**2)
+
+    return 2 * (x>=0) * isqrt_2pi * np.exp(-0.5 * x**2)
 
 # Devuelve (puntuacion, v_revisiones)
 def simil(ts, cs, ss, srs: SRS, k=3):
@@ -114,11 +117,6 @@ def PrLogistica(a,d,phi,psi,ts,cs,ss,t,nvent):
     if ts.size == 0:
         return 1.0
 
-    # t = 70
-    #[10, 30, 50]
-    #[-40, -20, 0]
-    #[-60, -40, -20]
-    #[-110, -90, -70]
     ts = ts - ts[-1] - t
 
     # Calculamos el tamanio de las ventanas
@@ -138,14 +136,72 @@ def PrLogistica(a,d,phi,psi,ts,cs,ss,t,nvent):
         sum_de_psi = psi[i]*np.log(1+np.sum(ss*m_i))
         resta = sum_de_phi - sum_de_psi
 
-        print('mascara_vent: ', m_i)
-        print('sum_de_phi: ', sum_de_phi)
-        print('sum_de_psi: ', sum_de_psi)
+        #print('mascara_vent: ', m_i)
+        #print('sum_de_phi: ', sum_de_phi)
+        #print('sum_de_psi: ', sum_de_psi)
         acum += resta 
-    
+
     Pr = sigmoid(a - d + acum)
 
     return Pr
+
+# Calculo de probabilidad por metodo de gaussianas
+# Recibe el tiempo de la ultima revision (t_actual)
+#  y recorta la funcion continua de probabilidad acumulativa hasta t_actual
+# Recibe un tiempo para evaluar dentro del dominio (t)
+# estudioAcum es la funcion de probabilidad acumulada en todo su dominio
+def PrLogisticaOpt(a,d,phi,psi, t_actual, t, estudioAcum_cs, estudioAcum_ss):
+
+    #Recorta la funcion hasta la ultima revision
+    idx_tactual = int(np.ceil(t_actual * estudioAcum_cs.size / (15*24*3600)))
+
+    if(idx_tactual==0):
+        idx_tactual+=3
+
+    #Copia de los estudios acumulados
+    est_cs = np.array(estudioAcum_cs)
+    est_ss = np.array(estudioAcum_ss)
+
+    est_cs[idx_tactual+1:] = est_cs[idx_tactual]
+    est_ss[idx_tactual+1:] = est_ss[idx_tactual]
+
+    idx_t = int(np.ceil(t * estudioAcum_cs.size / (15*24*3600)))
+
+    #print(f"idx_tactual: {idx_tactual}")
+    #print(f"acum_bueno: {estudioAcum_cs[:10]}")
+    #print(f"acum_malo: {est_cs[:10]}")
+    #cantidad de ventanas
+    nvent = phi.size
+    #Tamaño de las ventanas
+    ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
+    ancho_ventanas *= (24 * 3600)
+
+    ancho_ventanas = np.abs(np.ceil(ancho_ventanas * estudioAcum_cs.size / (15*24*3600))).astype(int)
+
+    #Correctas y totales por ventana
+    c = np.zeros(nvent)
+    s = np.zeros(nvent)
+
+    #print(f"idx_tactual: {idx_tactual}")
+    #print(f"ventanas: {ancho_ventanas}")
+    #print(f"idx_t: {idx_t}")
+    for v in range(nvent):
+        ancho_aux = ancho_ventanas[v] if ancho_ventanas[v]<=idx_t else idx_t
+        #print(f"ancho_aux: {ancho_aux}")
+        #print(f"c_arg1: {est_cs[idx_t]}")
+        #print(f"c_arg2: {est_cs[idx_t-ancho_aux]}")
+        c[v] = est_cs[idx_t] - est_cs[idx_t-ancho_aux] 
+        s[v] = est_ss[idx_t] - est_ss[idx_t-ancho_aux]
+
+    sum_phi = np.dot(phi, np.log(1+c))
+    sum_psi = np.dot(psi, np.log(1+s))
+
+    #print(f"C: {c}")
+    #print(f"S: {s}")
+
+    resta = sum_phi - sum_psi        
+    #print(f"resta: {resta}")
+    return sigmoid(a - d + resta)
 
 # Esto funciona para funciones `f` estrictamente decrecientes.
 # Devuelve valor mas cercano a x encontrado e imagen de la funcion
