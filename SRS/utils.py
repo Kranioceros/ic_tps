@@ -106,40 +106,44 @@ def fitness(ts, cs, ss, srs: SRS, return_revs=False, interrev=3600*6,
 def sigmoid(x):
     return np.reciprocal(1 + np.exp(-x))
 
-def crearMascaras(ts, ancho_ventanas, nvent):
+# Recibe ts, cs, ss CON LOS EVENTOS A CONSIDERAR. Dado un t_actual, los eventos
+# deben ocurrir previamente a t_actual. t es el tiempo con respecto a la ultima
+# revision
+def PrLogistica(a,d,phi,psi,ts,cs,ss,t,nvent):
+    # Si no hay eventos a considerar
+    if ts.size == 0:
+        return 1.0
+
+    # t = 70
+    #[10, 30, 50]
+    #[-40, -20, 0]
+    #[-60, -40, -20]
+    #[-110, -90, -70]
+    ts = ts - ts[-1] - t
+
+    # Calculamos el tamanio de las ventanas
+    ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
+    ancho_ventanas *= (24 * 3600)
+    #print(f'ancho_ventanas {ancho_ventanas / 3600 / 24}')
+
+    # Calculamos las mascaras para las revisiones
     m_mask = np.zeros((nvent,len(ts)))
     m_mask[0] = ts >= -ancho_ventanas[0]
     for i in range(1, nvent):
         m_mask[i] = ts >= -ancho_ventanas[i]
 
-    return m_mask
+    acum = 0
+    for i, m_i in enumerate(m_mask):
+        sum_de_phi = phi[i]*np.log(1+np.sum(cs*m_i))
+        sum_de_psi = psi[i]*np.log(1+np.sum(ss*m_i))
+        resta = sum_de_phi - sum_de_psi
 
-def PrLogistica(a,d,phi,psi,m_3d,sched,t_actual,nvent,ancho_ventanas):
-    #ts = ts - ts[-1] - t 
-
-    #ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
-    #ancho_ventanas *= (24 * 3600)
-
-    # Calculamos el tamanio de las ventanas
-    #m_mask = np.zeros((nvent,len(ts)))
-    #m_mask[0] = ts >= -ancho_ventanas[0]
-    #for i in range(1, nvent):
-    #    m_mask[i] = ts >= -ancho_ventanas[i]
-    #m_mask = crearMascaras(ts, ancho_ventanas, nvent)
-
-    #acum = 0
-
-    #for i, m_i in enumerate(m_mask):
-    #    sum_de_phi = phi*np.log(1+np.sum(c*m_i))
-    #    sum_de_psi = psi[i]*np.log(1+np.sum(n*m_i))
-    #    resta = sum_de_phi - sum_de_psi
-    #    acum += resta 
+        print('mascara_vent: ', m_i)
+        print('sum_de_phi: ', sum_de_phi)
+        print('sum_de_psi: ', sum_de_psi)
+        acum += resta 
     
-    sum_phi = np.dot(phi, m_3d[sched, t_actual, :nvent])
-    sum_psi = np.dot(psi, m_3d[sched, t_actual, nvent:])
-    resta = sum_phi - sum_psi
-
-    Pr = sigmoid(a - d + resta)
+    Pr = sigmoid(a - d + acum)
 
     return Pr
 

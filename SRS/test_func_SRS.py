@@ -15,65 +15,67 @@ def main():
     lens = np.load('SRS/data/len_schedule.npy')
     lens = lens.astype(int)
 
-    N = 100 #m_t.shape[0]
-    interrev = 1 * 24 * 3600
     nvent = 5
-    ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
-    ancho_ventanas *= (24 * 3600)
-
-    #Procesamiento de los c y n enmascarados
-    t_aux = np.linspace(0, 3600*24*15, 100)
-    m_3d = np.zeros((N, t_aux.size, 2*nvent))
-    for s in tqdm(range(m_3d.shape[0])):
-        for t in range(t_aux.size):
-            ts_aux = m_t[s] - m_t[s][-1] - t_aux[t]
-            for v in range(nvent):
-                mask = ts_aux >= -ancho_ventanas[v]
-                m_3d[s, t, v] = np.log(1+np.sum(m_c[s]*mask))
-                m_3d[s, t, v+nvent] = np.log(1+np.sum(m_s[s]*mask))
-
 
     # Datos de revisiones y parametros de SRS
-    ts_revs = np.array([0,3600*24,3600*48,3600*72, 3600*96])
-    phi = np.flip(np.linspace(0.10, 0.60, num=nvent))
-    psi = np.flip(-np.linspace(0.10, 0.60, num=nvent))
+    ts = np.array([0,3600*3*24,3600*6*24,3600*11*24])
+    cs = np.ones(4) * 15
+    ss = np.ones(4) * 15
+    #phi = np.ones(5) * 0.01
+    #psi = np.ones(5) * (-0.01)
+    phi = np.flip(np.linspace(0.10, 0.20, num=nvent))
+    psi = np.flip(-np.linspace(0.10, 0.20, num=nvent))
 
-    # PrLogistica(a,d,phi,psi,c,n, ts, t):
+    # PrLogistica(a,d,phi,psi,ts,cs,ss,t,nvent):
     prlogistica_kwargs = {
-        'a':     1,
-        'd':     1,
+        'a':     0.4,
+        'd':     2,
         'phi': phi,
         'psi': psi,
-        'm_3d': m_3d,
+        'nvent': 5,
     }
 
     #alfa0, phi0, psi0, nvent, ancho_ventanas, umbral, m_3d
-    srga = SRGA(1,phi,psi,nvent,ancho_ventanas, 0.75, m_3d)
+    #srga = SRGA(1,phi,psi,nvent,ancho_ventanas, 0.75, m_3d)
 
     # Evaluamos funcion de probabilidad usada en el SRS
-    t_aux = np.linspace(0, 3600*24*15, 100)
-    pr_vector = np.zeros(t_aux.size)
-    for i, t in enumerate(t_aux):
-        pr_vector[i] = PrLogistica(**prlogistica_kwargs, sched=0, t_actual=i, nvent=nvent, ancho_ventanas=ancho_ventanas)
+    t = np.linspace(0, 3600*24*15, 1000)
+    pr_vector = np.zeros(t.size)
+    last_idx = 0
+    for rev in range(ts.size):
+        print(f'rev: {rev}')
+        t_ultima_rev = ts[rev]
+        t_siguiente_rev = ts[rev+1] if rev < ts.size - 1 else 3600*24*15
+        print(f't_ultima_rev: {t_ultima_rev / 3600}')
+        print(f't_siguiente_rev: {t_siguiente_rev / 3600}')
+        mask = ts <= t_ultima_rev
+        mask2 = np.logical_and(t >= t_ultima_rev, t < t_siguiente_rev)
+        for i, t_i in enumerate(t[mask2]):
+            print('t_i: ', t_i / 3600 / 24)
+            pr_vector[last_idx] = PrLogistica(**prlogistica_kwargs, ts=ts[mask],
+                cs=cs[mask], ss=ss[mask], t=t_i-t_ultima_rev)
+            last_idx += 1
 
-    # Evaluamos obtener el valor del dominio en base a la imagen usando
-    # biseccion
-    (t_p, p) = srga.prox_revision(0, 50)
-    
     # Formatting de la grafica
     _fig = plt.figure()
     ax = plt.subplot()
 
     seg_dia = 24 * 60 * 60
-    #ax.set_ylim(0, 1)
+    ax.set_ylim(0, 1.1)
     ax.xaxis.set_major_locator(MultipleLocator(seg_dia))
     ax.xaxis.set_major_formatter(FuncFormatter(lambda x,_p: str(int(x/seg_dia))+'d'))
 
-    ax.plot(t_aux, pr_vector)
+    ax.plot(t, pr_vector)
 
-    ax.scatter(t_p, p, color='red')
-    revisiones_aux = m_t[0, m_t[0,:]<t_aux[50]]
-    ax.scatter(revisiones_aux, np.ones(revisiones_aux.size)*0.5, color='g')
+    ax.vlines(ts, ymin=0, ymax=1, color='r', linestyle='dashed')
+
+    # Evaluamos obtener el valor del dominio en base a la imagen usando
+    # biseccion
+    #(t_p, p) = srga.prox_revision(0, 50)
+    
+    #ax.scatter(t_p, p, color='red')
+    #revisiones_aux = m_t[0, m_t[0,:]<t_aux[50]]
+    #ax.scatter(revisiones_aux, np.ones(revisiones_aux.size)*0.5, color='g')
 
     plt.show()
 
