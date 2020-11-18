@@ -1,4 +1,6 @@
 import numpy as np
+from utils import integral_acumulada
+from tqdm import tqdm
 
 class SRS:
     def __init__(self):
@@ -18,47 +20,75 @@ class Uniforme(SRS):
         return ts[-1] + self.t
 
 class SRGA(SRS):
-    #def PrLogistica(a,d,phi,psi,c,n,ts,t,nvent=5):
-    def __init__(self, alfa0, phi0, psi0, nvent, ancho_ventanas, umbral, m_3d):
+    m_acum_cs = None
+    m_acum_ss = None
+
+    @classmethod
+    # Recibe la resolucion `res` con la cual se calculan las funciones acumuladas
+    # Recibe el sigma (en minutos) con el cual se calcula la densidad
+    # Recibe cs y ss de todos los schedules
+    def init_acums(cls, m_t, m_c, m_s, res=1000, sigma=30):
+        print("---INICIA init_acums---")
+        # Nos fijamos si no calculamos previamente estos acumulados
+        c_fname = "acum_c-res" + str(res) + "-sigma" + str(sigma)
+        s_fname = "acum_s-res" + str(res) + "-sigma" + str(sigma)
+        # Cargamos el archivo si existe
+        # TODO
+        # Inicializamos acum_cs y acum_ss
+        S = m_c.shape[0]
+        v_t = np.linspace(0, 15*24*3600, res)
+        m_acum_cs = np.zeros(S, res)
+        m_acum_ss = np.zeros(S, res)
+        for s in range(S):
+            m_acum_cs = integral_acumulada(v_t, m_t[s], m_c[s], sigma)
+            m_acum_ss = integral_acumulada(v_t, m_t[s], m_s[s], sigma)
+            # CONTINUARA
+
+
+    def __init__(self, alfa0, phi0, psi0, umbral):
         self.alfa = alfa0
         self.phi = phi0
         self.psi = psi0
         self.umbral = umbral
-        self.nvent = nvent
-        self.ancho_ventanas = ancho_ventanas
-        self.m_3d = m_3d
 
     # TODO: Usar el beta (dificultad del item en cuestion)
-    def prox_revision(self, sched_idx, t_idx):
-        from utils import PrLogistica
+    def prox_revision(self, delta, t_ult_rev, acum_cs, acum_ss):
+        from utils import PrLogisticaOpt
+
+        if acum_cs.size != acum_ss.size:
+            print('Flasheaste cualquiera hermano')
+            return
+
+        #PrLogisticaOpt(a, d, phi, psi, t_ult_rev, t, estudioAcum_cs, estudioAcum_ss)
+
+        idx_ult_rev = int(np.ceil(t_ult_rev * acum_cs.size / (15*24*3600)))
 
         prlog_args = {
             'a': self.alfa,
-            'd': 1,
+            'd': delta,
             'phi': self.phi,
             'psi': self.psi,
-            'm_3d': self.m_3d
+            't_actual': t_ult_rev,
+            'estudioAcum_cs': acum_cs,
+            'estudioAcum_ss': acum_ss,
         }
 
         #-----  Biseccion  ---------
-        #Dominio
-        t_aux = np.linspace(0, 3600*24*15, 100)
-
         #Parametros
         tol = 0.05
         max_iter = 10
-        N = t_aux.size
+        N = acum_ss.size
         it = 0
 
-        #maximos y minimos
+        # y_min, y_max: Valores de probabilidad minimos y maximos hasta ahora
+        # min_idx, max_idx: Indices correspondientes a minimo y maximo
         min_idx = N-1
-        y_min =  PrLogistica(**prlog_args, sched=sched_idx, t_actual=min_idx, nvent=self.nvent, ancho_ventanas=self.ancho_ventanas)
-        max_idx = t_idx
-        y_max =  PrLogistica(**prlog_args, sched=sched_idx, t_actual=max_idx, nvent=self.nvent, ancho_ventanas=self.ancho_ventanas)
+        max_idx = idx_ult_rev
         
-        #Indice e imagen actual
+        #Indice, tiempo e imagen
         idx = int((min_idx+max_idx) / 2)
-        y = PrLogistica(**prlog_args, sched=sched_idx, t_actual=idx, nvent=self.nvent, ancho_ventanas=self.ancho_ventanas)
+        t = idx * (15*24*3600) / N
+        y = PrLogisticaOpt(**prlog_args, t=(t_ult_rev + 15*24*3600) / 2)
 
         #Error actual
         err = self.umbral - y
@@ -71,7 +101,11 @@ class SRGA(SRS):
                 min_idx = idx
                 idx = int((max_idx + idx) / 2)
             it += 1
-            y = PrLogistica(**prlog_args, sched=sched_idx, t_actual=idx, nvent=self.nvent, ancho_ventanas=self.ancho_ventanas)
+            # Obtenemos el t real a partir del indice
+            t = idx * (15*24*3600) / N
+            # Evaluamos la probabilidad en el punto
+            y = PrLogisticaOpt(**prlog_args, t=t)
+            # Calculamos el error
             err = self.umbral - y
-        
-        return (t_aux[idx], y)
+
+        return (t, y)

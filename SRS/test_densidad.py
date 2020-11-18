@@ -15,7 +15,7 @@ def main():
     ss = m_s[sched]
     n = lens[sched]
 
-    cant_n = 5
+    cant_n = 20
 
     graficar(axs[0], m_t[sched], cs, ss, cant_n, dens=None, accum=None)
     graficar(axs[1], m_t[sched], cs, ss, cant_n, dens='CS', accum=None, sigma=1*3600)

@@ -5,9 +5,9 @@ from matplotlib.ticker import (MultipleLocator, FuncFormatter,
 
 from srs import SRS
 
-def graficar(ax, ts, cs, ss, n, dens=None, accum=None, sigma=1.0):
-    mask_cs = np.logical_and((cs == ss),(cs >= 0))
-    mask_is = np.logical_and(np.logical_not(mask_cs),(cs >= 0))
+def graficar(ax, ts, cs, ss, n, dens=None, accum=None, sigma=1.0, c='b'):
+    mask_cs = np.logical_and((cs[:n] == ss[:n]),(cs[:n] >= 0))
+    mask_is = np.logical_and(np.logical_not(mask_cs),(cs[:n] >= 0))
 
     # Configuracion grafica
     seg_dia = 24 * 60 * 60
@@ -16,29 +16,31 @@ def graficar(ax, ts, cs, ss, n, dens=None, accum=None, sigma=1.0):
     ax.xaxis.set_major_locator(MultipleLocator(seg_dia))
     ax.xaxis.set_major_formatter(FuncFormatter(lambda x,_p: str(int(x/seg_dia))+'d'))
     ax.xaxis.set_minor_locator(MultipleLocator(seg_dia/4))
-    ax.set_xlim(right=max_dia*seg_dia)
-    ax.vlines(ticks, 0, 1, colors=['grey'], linestyles='dotted')
+    ax.set_xlim(-seg_dia, max_dia*seg_dia)
 
     if dens is None and accum is None:
-        ax.stem(ts[mask_cs], np.ones(len(ts[mask_cs])), 'b', linefmt="b-",
+        ax.stem(ts[:n][mask_cs], np.ones(len(ts[:n][mask_cs])), 'b', linefmt="b-",
                 markerfmt="bo", basefmt="black")
-        ax.stem(ts[mask_is], np.ones(len(ts[mask_is])), 'r', linefmt="r-",
+        ax.stem(ts[:n][mask_is], np.ones(len(ts[:n][mask_is])), 'r', linefmt="r-",
                 markerfmt="rx", basefmt="black")
+        ax.vlines(ticks, 0, 1, colors=['grey'], linestyles='dotted')
     elif dens is not None:
         v_x = cs if dens.lower() == "cs" else ss
-        xs = np.linspace(0, max_dia*seg_dia, 50000)
+        xs = np.linspace(0, max_dia*seg_dia, 5000)
         ys = densidad(xs, ts[:n], v_x[:n], sigma)
 
         print(f'total revisiones: {np.sum(cs[:n])}')
         print(f'ys_integral: {np.trapz(ys, xs)}')
 
-        ax.plot(xs, sigma*ys) # Fines esteticos
+        ax.plot(xs, sigma*ys, c=c) # Fines esteticos
+        ax.vlines(ticks, 0, np.max(ys), colors=['grey'], linestyles='dotted')
     elif accum is not None:
         v_x = cs if accum.lower() == "cs" else ss
         xs = np.linspace(0, max_dia*seg_dia, 5000)
         ys = integral_acumulada(xs, ts[:n], v_x[:n], sigma)
 
-        ax.plot(xs, ys)
+        ax.vlines(ticks, 0, np.max(ys), colors=['grey'], linestyles='dotted')
+        ax.plot(xs, ys, c=c)
 
 
 # `v_t`: tiempos en los que se quiere evaluar la funcion
@@ -147,14 +149,16 @@ def PrLogistica(a,d,phi,psi,ts,cs,ss,t,nvent):
 
 # Calculo de probabilidad por metodo de gaussianas
 # Recibe el tiempo de la ultima revision (t_actual)
-#  y recorta la funcion continua de probabilidad acumulativa hasta t_actual
+# y recorta la funcion continua de probabilidad acumulativa hasta t_actual
 # Recibe un tiempo para evaluar dentro del dominio (t)
 # estudioAcum es la funcion de probabilidad acumulada en todo su dominio
-def PrLogisticaOpt(a,d,phi,psi, t_actual, t, estudioAcum_cs, estudioAcum_ss):
+def PrLogisticaOpt(a, d, phi, psi, t_actual, t, estudioAcum_cs, estudioAcum_ss):
 
     #Recorta la funcion hasta la ultima revision
     idx_tactual = int(np.ceil(t_actual * estudioAcum_cs.size / (15*24*3600)))
 
+    # Porque la acumulada arranca con ceros, el pico de la primera revision no
+    # esta exactamente al principio. Hack horrible.
     if(idx_tactual==0):
         idx_tactual+=3
 
@@ -203,21 +207,40 @@ def PrLogisticaOpt(a,d,phi,psi, t_actual, t, estudioAcum_cs, estudioAcum_ss):
     #print(f"resta: {resta}")
     return sigmoid(a - d + resta)
 
-# Esto funciona para funciones `f` estrictamente decrecientes.
-# Devuelve valor mas cercano a x encontrado e imagen de la funcion
-# en ese punto
-def biseccion(x, tol, v_intervalo, f, max_iter=10):
-    N = v_intervalo.size
-    idx = int(N / 2)
-    y = f(v_intervalo[idx])
-    err = x - y
-    it = 0
-    while it < max_iter and abs(err) > tol:
-        if err < 0:
-            idx += int((N - idx) / 2)
-        else:
-            idx -= int(idx / 2)
-        it += 1
-        y = f(v_intervalo[idx])
-        err = x - y
-    return (v_intervalo[idx], y)
+# Grafica la probabilidad de recordar los items dados en `ts_revs`
+def plotLogisticaOpt(ax, a, d, phi, psi, ts_rev, acum_cs, acum_ss):
+    prlogistica_kwargs = {
+        'a':     0.4,
+        'd':     2,
+        'phi': phi,
+        'psi': psi,
+    }
+
+    t = np.linspace(0, 3600*24*15, acum_cs.size)
+    pr_vector_opt = np.zeros(t.size)
+    last_idx = 0
+
+    for rev in range(ts_rev.size):
+        #print(f'rev: {rev}')
+        t_ultima_rev = ts_rev[rev]
+        t_siguiente_rev = ts_rev[rev+1] if rev < ts_rev.size - 1 else 3600*24*15
+        #print(f't_ultima_rev: {t_ultima_rev / 3600}')
+        #print(f't_siguiente_rev: {t_siguiente_rev / 3600}')
+        mask = np.logical_and(t >= t_ultima_rev, t < t_siguiente_rev)
+        for i, t_i in enumerate(t[mask]):
+            #print('t_i: ', t_i / 3600 / 24)
+            pr_vector_opt[last_idx] = PrLogisticaOpt(**prlogistica_kwargs, t_actual=t_ultima_rev, t=t_i, estudioAcum_cs=acum_cs, estudioAcum_ss=acum_ss)
+            last_idx += 1
+
+    # Formatting de la grafica
+    max_dia = 15
+    seg_dia = 24 * 60 * 60
+    ax.set_ylim(0, 1.1)
+    ax.set_xlim(-seg_dia, max_dia*seg_dia)
+    ax.xaxis.set_major_locator(MultipleLocator(seg_dia))
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda x,_p: str(int(x/seg_dia))+'d'))
+    ax.xaxis.set_minor_locator(MultipleLocator(seg_dia/4))
+
+    #Grafica de probabilidad
+    ax.plot(t, pr_vector_opt)
+    ax.vlines(ts_rev, ymin=0, ymax=1, color='r', linestyle='dotted')
