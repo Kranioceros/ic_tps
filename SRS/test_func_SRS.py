@@ -10,7 +10,7 @@ from srs import SRGA
 
 def main():
     # Formatting de la grafica
-    fig, axs = plt.subplots(2,1)
+    _fig, axs = plt.subplots(2,1)
 
     #----- Format --------------
     seg_dia = 24 * 60 * 60
@@ -24,9 +24,6 @@ def main():
     #---------------------------
 
     # Cargamos datos
-    m_t = np.load('SRS/data/times.npy')
-    m_c = np.load('SRS/data/correct.npy')
-    m_s = np.load('SRS/data/seen.npy')
     lens = np.load('SRS/data/len_schedule.npy')
     lens = lens.astype(int)
 
@@ -65,7 +62,7 @@ def main():
         #print(f't_siguiente_rev: {t_siguiente_rev / 3600}')
         mask = ts <= t_ultima_rev
         mask2 = np.logical_and(t >= t_ultima_rev, t < t_siguiente_rev)
-        for i, t_i in enumerate(t[mask2]):
+        for t_i in t[mask2]:
             #print('t_i: ', t_i / 3600 / 24)
             pr_vector[last_idx] = PrLogistica(**prlogistica_kwargs, ts=ts[mask],
                 cs=cs[mask], ss=ss[mask], t=t_i-t_ultima_rev, nvent=5)

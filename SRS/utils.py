@@ -5,7 +5,7 @@ from matplotlib.ticker import (MultipleLocator, FuncFormatter,
 
 from srs import SRS
 
-def graficar(ax, ts, cs, ss, n, dens=None, accum=None, sigma=1.0, c='b'):
+def graficar(ax, ts, cs, ss, n, dens=None, accum=None, res=1000, sigma=30, c='b'):
     mask_cs = np.logical_and((cs[:n] == ss[:n]),(cs[:n] >= 0))
     mask_is = np.logical_and(np.logical_not(mask_cs),(cs[:n] >= 0))
 
@@ -26,8 +26,8 @@ def graficar(ax, ts, cs, ss, n, dens=None, accum=None, sigma=1.0, c='b'):
         ax.vlines(ticks, 0, 1, colors=['grey'], linestyles='dotted')
     elif dens is not None:
         v_x = cs if dens.lower() == "cs" else ss
-        xs = np.linspace(0, max_dia*seg_dia, 5000)
-        ys = densidad(xs, ts[:n], v_x[:n], sigma)
+        xs = np.linspace(0, max_dia*seg_dia, res)
+        ys = densidad(xs, ts[:n], v_x[:n], sigma*60)
 
         print(f'total revisiones: {np.sum(cs[:n])}')
         print(f'ys_integral: {np.trapz(ys, xs)}')
@@ -36,8 +36,8 @@ def graficar(ax, ts, cs, ss, n, dens=None, accum=None, sigma=1.0, c='b'):
         ax.vlines(ticks, 0, np.max(ys), colors=['grey'], linestyles='dotted')
     elif accum is not None:
         v_x = cs if accum.lower() == "cs" else ss
-        xs = np.linspace(0, max_dia*seg_dia, 5000)
-        ys = integral_acumulada(xs, ts[:n], v_x[:n], sigma)
+        xs = np.linspace(0, max_dia*seg_dia, res)
+        ys = integral_acumulada(xs, ts[:n], v_x[:n], sigma*60)
 
         ax.vlines(ticks, 0, np.max(ys), colors=['grey'], linestyles='dotted')
         ax.plot(xs, ys, c=c)
@@ -69,11 +69,14 @@ def norm_estandar(x):
     return 2 * (x>=0) * isqrt_2pi * np.exp(-0.5 * x**2)
 
 # Devuelve (puntuacion, v_revisiones)
-def simil(ts, cs, ss, srs: SRS, k=3):
+def simil(ts, sched, srs: SRS, k=3):
+    delta = 1.0
+
     rs = np.zeros(ts.size)
     rs[0] = 0
-    for i in range(rs.size-1):
-        rs[i+1] = srs.prox_revision(ts[:i+1], cs[i], ss[i])
+    for i, rev_t in enumerate(ts[:-1]):
+    #for i in range(rs.size-1):
+        (rs[i+1], _p) = srs.prox_revision(delta, sched, rev_t)
     
     #print(f"rs: {rs / 3600}")
     #print(f"ts: {ts / 3600}")
@@ -96,9 +99,9 @@ def bondad(ts, m, alfa=0.4, max_rev = 6*3600):
     #print(f't_n - t_(n-1): {ts[-1] - ts[ti]}')
     return (m[-1] * (ts[-1] - ts[ti])) ** alfa
 
-def fitness(ts, cs, ss, srs: SRS, return_revs=False, interrev=3600*6,
+def fitness(sched, ts, cs, ss, srs: SRS, return_revs=False, interrev=3600*6,
     alfa=0.4, k=1/(3600*24)):
-    (similitud, v_rev) = simil(ts, cs, ss, srs, k=k)
+    (similitud, v_rev) = simil(ts, sched, srs, k)
     #print(f'simil: {similitud}')
     buenitud = bondad(ts, cs / ss, alfa=alfa, max_rev=interrev)
     #print(f'bondad: {buenitud}')
@@ -147,6 +150,24 @@ def PrLogistica(a,d,phi,psi,ts,cs,ss,t,nvent):
 
     return Pr
 
+def copia(idx_tactual, estudioAcum_cs, estudioAcum_ss):
+    est_cs = np.array(estudioAcum_cs)
+    est_ss = np.array(estudioAcum_ss)
+
+    est_cs[idx_tactual+1:] = est_cs[idx_tactual]
+    est_ss[idx_tactual+1:] = est_ss[idx_tactual]
+
+    return (est_cs, est_ss)
+
+def f_ancho_ventanas(nvent, estudioAcum_cs):
+    ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
+    ancho_ventanas *= (24 * 3600)
+
+    ancho_ventanas = np.abs(np.ceil(ancho_ventanas * estudioAcum_cs.size / (15*24*3600))).astype(int)
+
+    return ancho_ventanas
+
+
 # Calculo de probabilidad por metodo de gaussianas
 # Recibe el tiempo de la ultima revision (t_actual)
 # y recorta la funcion continua de probabilidad acumulativa hasta t_actual
@@ -163,11 +184,12 @@ def PrLogisticaOpt(a, d, phi, psi, t_actual, t, estudioAcum_cs, estudioAcum_ss):
         idx_tactual+=3
 
     #Copia de los estudios acumulados
-    est_cs = np.array(estudioAcum_cs)
-    est_ss = np.array(estudioAcum_ss)
+    #est_cs = np.array(estudioAcum_cs)
+    #est_ss = np.array(estudioAcum_ss)
 
-    est_cs[idx_tactual+1:] = est_cs[idx_tactual]
-    est_ss[idx_tactual+1:] = est_ss[idx_tactual]
+    #est_cs[idx_tactual+1:] = est_cs[idx_tactual]
+    #est_ss[idx_tactual+1:] = est_ss[idx_tactual]
+    (est_cs, est_ss) = copia(idx_tactual, estudioAcum_cs, estudioAcum_ss)
 
     idx_t = int(np.ceil(t * estudioAcum_cs.size / (15*24*3600)))
 
@@ -177,10 +199,12 @@ def PrLogisticaOpt(a, d, phi, psi, t_actual, t, estudioAcum_cs, estudioAcum_ss):
     #cantidad de ventanas
     nvent = phi.size
     #Tamaño de las ventanas
-    ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
-    ancho_ventanas *= (24 * 3600)
 
-    ancho_ventanas = np.abs(np.ceil(ancho_ventanas * estudioAcum_cs.size / (15*24*3600))).astype(int)
+    #ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
+    #ancho_ventanas *= (24 * 3600)
+
+    #ancho_ventanas = np.abs(np.ceil(ancho_ventanas * estudioAcum_cs.size / (15*24*3600))).astype(int)
+    ancho_ventanas = f_ancho_ventanas(nvent, estudioAcum_cs)
 
     #Correctas y totales por ventana
     c = np.zeros(nvent)
@@ -210,8 +234,8 @@ def PrLogisticaOpt(a, d, phi, psi, t_actual, t, estudioAcum_cs, estudioAcum_ss):
 # Grafica la probabilidad de recordar los items dados en `ts_revs`
 def plotLogisticaOpt(ax, a, d, phi, psi, ts_rev, acum_cs, acum_ss):
     prlogistica_kwargs = {
-        'a':     0.4,
-        'd':     2,
+        'a':     a,
+        'd':     d,
         'phi': phi,
         'psi': psi,
     }
@@ -227,7 +251,7 @@ def plotLogisticaOpt(ax, a, d, phi, psi, ts_rev, acum_cs, acum_ss):
         #print(f't_ultima_rev: {t_ultima_rev / 3600}')
         #print(f't_siguiente_rev: {t_siguiente_rev / 3600}')
         mask = np.logical_and(t >= t_ultima_rev, t < t_siguiente_rev)
-        for i, t_i in enumerate(t[mask]):
+        for t_i in t[mask]:
             #print('t_i: ', t_i / 3600 / 24)
             pr_vector_opt[last_idx] = PrLogisticaOpt(**prlogistica_kwargs, t_actual=t_ultima_rev, t=t_i, estudioAcum_cs=acum_cs, estudioAcum_ss=acum_ss)
             last_idx += 1

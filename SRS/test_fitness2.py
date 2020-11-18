@@ -15,39 +15,56 @@ def main():
     lens = lens.astype(int)
 
     N = m_t.shape[0]
+    n = 10
 
     # Reordenamos al azar
-    idx = np.random.shuffle(np.arange(N, dtype=int))
-    m_t = m_t[idx].reshape(N, 352)
-    m_c = m_c[idx].reshape(N, 352)
-    m_s = m_s[idx].reshape(N, 352)
-    lens = lens[idx].reshape(N)
-
-    print(lens)
+    idx = np.arange(N, dtype=int)
+    np.random.shuffle(idx)
+    m_t = m_t[idx][:n]
+    m_c = m_c[idx][:n]
+    m_s = m_s[idx][:n]
+    lens = lens[idx][:n]
 
     # Creamos un SRS uniforme
-    uniforme = Uniforme(24 * 3600)
+    _uniforme = Uniforme(24 * 3600)
+
+    # Datos relacionados a SRGA
+    res = 1000
+    nvent = 5
+    phi = np.flip(np.linspace(0.10, 0.20, num=nvent))
+    psi = np.flip(-np.linspace(0.20, 0.40, num=nvent))
+    a = 0.4
+    #delta = 1
+    umbral = 0.9
+    sigma = 30 # en minutos
 
     # Creamos nuestro SRS deluxe, SRGA
-    nvent = 5
-    phi = np.flip(np.linspace(0.10, 0.60, num=nvent))
-    psi = np.flip(-np.linspace(0.10, 0.60, num=nvent))
-    srga = SRGA(1.0, phi, psi, nvent, 0.60)
+    srga_kwargs = {
+        'alfa0': a,
+        'phi0': phi,
+        'psi0': psi,
+        'umbral': umbral,
+    }
+
+    # Inicializamos clase
+    SRGA.init_class(lens, m_t, m_c, m_s, res=res, sigma=sigma) # Sigma en minutos
+    srga = SRGA(**srga_kwargs)
 
     # Lo probamos contra todos los schedules
-    v_apts = np.ones(N) * (-1)
+    v_apts = np.ones(n) * (-1)
     descartados = 0
     umbral_fitness = 5
     interrev = 1 * 24 * 3600
 
-    for i in tqdm(range(N)):
+    for i in tqdm(range(n)):
         l = lens[i]
         if m_t[i,l-1] < interrev:
             descartados += 1
             continue
 
-        v_apts[i] = fitness(m_t[i,:l], m_c[i,:l], m_s[i,:l], srga,
-            return_revs=False, alfa=0.5, interrev=interrev)
+        v_apts[i] = fitness(i, m_t[i,:l], m_c[i,:l], m_s[i,:l], srs=srga)
+        #v_apts[i] = fitness(m_t[i,:l], m_c[i,:l], m_s[i,:l], srs=srga,
+            #return_revs=False, alfa=0.5, interrev=interrev)
 
     v_apts_sorted = np.sort(v_apts[v_apts>0])
     print(f'10 peores: {v_apts_sorted[:10]}')
