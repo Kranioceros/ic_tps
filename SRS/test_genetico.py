@@ -83,7 +83,7 @@ def main():
 
     #Evolucionamos
     ga = GA(**evolutivo_kwargs)
-    ga.Evolve()
+    ga.Evolve(elitismo=True, brecha=0.4, convGen=100)
     ga.DebugPopulation()
 
 #Decodificador binario-decimal 

@@ -2,6 +2,7 @@ import numpy as np
 from Evolutivo.DNA import DNA
 from Evolutivo.debug import dbg
 from tqdm import tqdm
+import random
 
 #Los agentes (DNA) pueden ser cualquier objeto que necesita:
     #En caso de ser genético:
@@ -78,7 +79,8 @@ class GA:
             dbg(f"Mejor Fitness {_i+1}: {bestFitnessActual}", 3, self.debugLvl)
 
             #Verifico si se repite el mejor fitness
-            if(bestFitnessActual == bestFitnessPrev):
+            tol = .001
+            if(np.abs(bestFitnessActual - bestFitnessPrev) <= tol):
                 bestRepeated += 1
                 #Si ya se repitió convGen veces -> termino
                 if(bestRepeated == convGen):
@@ -94,18 +96,27 @@ class GA:
             if(elitismo):
                 newPopulation.append(bestAgent)
 
+            #Individuos que se van a usar para la cruza y mutaciones
+            subsetPopulation = []
+
             #Brecha generacional
-            n_brecha = int(self.N*brecha)
-            for i in range(n_brecha):
-                newPopulation.append(self.population[i])
+            if(brecha > 0):
+                #Cantidad entera de individuos en la brecha
+                n_brecha = int(self.N*brecha)
+                #Agarro indices al azar sin repetir
+                idxs = random.sample(range(0, self.N), n_brecha)
+                for i in idxs:
+                    subsetPopulation.append(self.population[i])
+            else:
+                subsetPopulation = list(self.population)
 
             #Itero tantas veces como agentes en una poblacion
             for _j in range(self.N):
 
                 #Picker recipiente
                 #Eligo dos agentes al "azar"
-                a1 = self.Picker()
-                a2 = self.Picker()
+                a1 = self.Picker(subsetPopulation)
+                a2 = self.Picker(subsetPopulation)
 
                 v_newAgents = []
                 #Combino los dos agentes y obtengo dos nuevos
@@ -130,26 +141,29 @@ class GA:
             self.population = list(newPopulation[0:self.N])
 
 
-    def Picker(self):
+    def Picker(self, agents):
         #Comienzo con el recipiente lleno
         volume = 1.0
         #Variable para escapar del while infinito (puede llegar a pasar que todos los agentes tengan un fitness muy cercano a 0 y tarde demasiado en llegar a 0 el volumen)
         beSafe = 0
+
+        #Cantidad de agentes
+        N = len(agents)
 
         #Indice del agente elegido
         randAgent = 0
         #Mientras que no se vacie el recipiente y estemos dentro del beSafe
         while(volume>=0 and beSafe < 100):
             #agarro agente al azar
-            randAgent = np.random.randint(0,self.N)
+            randAgent = np.random.randint(0, N)
 
             #Resto al volumen actual con respecto al fitness normalizado del agente elegido 
-            volume -= self.population[randAgent].fitnessNormalize
+            volume -= agents[randAgent].fitnessNormalize
 
             beSafe += 1
 
         #Devuelvo el agente que vació el recipiente
-        return self.population[randAgent]
+        return agents[randAgent]
 
     #Agarra 'cant' agentes y elige el mejor de esos
     def PickerCompetencia(self, cant):
