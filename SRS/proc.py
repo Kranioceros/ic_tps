@@ -57,5 +57,25 @@ def main():
     np.save('SRS/data/seen', m_seen)
     np.save('SRS/data/correct', m_correct)
 
+#si lo queremos separado..
+#m_lexemes_ids = []
+#m_deltas = np.zeros(schedules_count)
+#    for i, (lexeme_id, lex_dificulty) in tqdm(enumerate(db.cursor().execute(
+#       'select * from only_dificulty'))):
+#       m_lexemes_ids.append(lexeme_id)
+#       m_deltas[i] = lex_dificulty
+
+#Con esto vamos a tener una matriz (lista de tuplas en realidad) a la par de las demas, que contienen los lexemes_dificulty de cada palabra 
+
+   # for i, (lexeme_id, lex_dificulty) in tqdm(enumerate(db.cursor().execute(
+   #    'select * from only_dificulty'))):
+   #    m_lexemes_dificulty.append(lexeme_id,lex_dificulty)
+
+#lexemes = np.genfromtxt("SRS/data/only_dificulty_30.csv", dtype='U25', delimiter=',')
+#print(lexemes)
+#v_only_dif = lexemes[:,1].astype(np.float)
+#v_lexemes_ids = lexemes[:,0]
+#print(v_lexemes_ids)
+
 if __name__ == "__main__":
     main()

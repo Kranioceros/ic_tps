@@ -1,0 +1,1 @@
+CREATE TABLE only_dificulty_30 as select a.lexeme_id,b.lex_dificulty from users_lexemes_30 as a inner join lexemes_dificulty as b on a.lexeme_id = b.lexeme_id
