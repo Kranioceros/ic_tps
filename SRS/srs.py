@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+from pathlib import Path
 
 class SRS:
     def __init__(self):
@@ -31,22 +32,30 @@ class SRGA(SRS):
         from utils import integral_acumulada
         print("---INICIA init_acums---")
         # Nos fijamos si no calculamos previamente estos acumulados
-        _c_fname = "acum_c-res" + str(res) + "-sigma" + str(sigma)
-        _s_fname = "acum_s-res" + str(res) + "-sigma" + str(sigma)
+        c_fname = "acum_c-res" + str(res) + "-sigma" + str(sigma) + ".npy"
+        s_fname = "acum_s-res" + str(res) + "-sigma" + str(sigma) + ".npy"
         # Cargamos el archivo si existe
-        # TODO
-        # Inicializamos acum_cs y acum_ss
-        S = m_c.shape[0]
-        v_t = np.linspace(0, 15*24*3600, res)
-        cls.m_acum_cs = np.zeros((S, res))
-        cls.m_acum_ss = np.zeros((S, res))
-        for s in tqdm(range(S)):
-            n = lens[s]
-            # pylint: disable=unsubscriptable-object, unsupported-assignment-operation
-            cls.m_acum_cs[s] = integral_acumulada(v_t, m_t[s,:n], m_c[s,:n], sigma=sigma*60)
-            cls.m_acum_ss[s] = integral_acumulada(v_t, m_t[s,:n], m_s[s,:n], sigma=sigma*60)
-        # Guardamos el archivo
-        # TODO
+        c_path = Path('SRS/data/' + c_fname)
+        s_path = Path('SRS/data/' + s_fname)
+        if c_path.is_file() and s_path.is_file():
+            print("Cargando datos cacheados...")
+            cls.m_acum_cs = np.load(c_path)
+            cls.m_acum_ss = np.load(s_path)
+        else:
+            print("Generando matrices...")
+            # Inicializamos acum_cs y acum_ss
+            S = m_c.shape[0]
+            v_t = np.linspace(0, 15*24*3600, res)
+            cls.m_acum_cs = np.zeros((S, res))
+            cls.m_acum_ss = np.zeros((S, res))
+            for s in tqdm(range(S)):
+                n = lens[s]
+                # pylint: disable=unsubscriptable-object, unsupported-assignment-operation
+                cls.m_acum_cs[s] = integral_acumulada(v_t, m_t[s,:n], m_c[s,:n], sigma=sigma*60)
+                cls.m_acum_ss[s] = integral_acumulada(v_t, m_t[s,:n], m_s[s,:n], sigma=sigma*60)
+            # Guardamos el archivo
+            np.save(c_path, cls.m_acum_cs)
+            np.save(s_path, cls.m_acum_ss)
 
 
     def __init__(self, alfa0, phi0, psi0, umbral):
@@ -77,7 +86,7 @@ class SRGA(SRS):
         #-----  Biseccion  ---------
         #Parametros
         tol = 0.05
-        max_iter = 10
+        max_iter = 8
         N = acum_ss.size
         it = 0
 

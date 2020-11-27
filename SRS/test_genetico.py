@@ -20,8 +20,6 @@ var_max  = np.array(
     [100, 1, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
 )
 
-
-N = 100 #m_t.shape[0]
 interrev = 1 * 24 * 3600
 nvent = 5
 ancho_ventanas = np.exp( np.log(15) / nvent * np.arange(1, nvent+1))
@@ -38,12 +36,14 @@ def main():
 
 
     # Cargamos unos pocos para que corra rapido 
-    _N = m_t.shape[0]
-    n = 10
-    m_t = m_t[:n]
-    m_c = m_c[:n]
-    m_s = m_s[:n]
-    lens = lens[:n]
+    N = m_t.shape[0]
+    n = 5
+    rand_idx = np.arange(N)
+    np.random.shuffle(rand_idx)
+    m_t = m_t[rand_idx]
+    m_c = m_c[rand_idx]
+    m_s = m_s[rand_idx]
+    lens = lens[rand_idx]
 
     # Inicializamos la clase SRGA, que preprocesa los datos si hace falta
     SRGA.init_class(lens, m_t, m_c, m_s, res=1000)
@@ -58,29 +58,26 @@ def main():
         srga = SRGA(alfa0, phi, psi, umbral)
 
         v_apts = np.zeros(n)
+        scheds = np.random.choice(np.arange(0, N), size=n)
 
-        for i in tqdm(range(n)):
-            l = lens[i]
-            if m_t[i,l-1] < interrev:
+        for i, s in enumerate(scheds):
+            l = lens[s]
+            if m_t[s,l-1] < interrev:
                 continue
 
-            #def fitness(sched, ts, cs, ss, srs: SRS, return_revs=False, interrev=3600*6,
-            #alfa=0.4, k=1/(3600*24)):
-            v_apts[i] = fitness(i, m_t[i,:l], m_c[i,:l], m_s[i,:l], srs=srga)
-            #v_apts[i] = fitness(m_t[i,:l], m_c[i,:l], m_s[i,:l], srga,
-                #return_revs=False, alfa=0.5, interrev=interrev)
+            v_apts[i] = fitness(s, m_t[s,:l], m_c[s,:l], m_s[s,:l], srs=srga)
         
         return np.average(v_apts)
     
     # Definimos parametros a usar en el evolutivo
     evolutivo_kwargs = {
-                'N'                : 10,
+                'N'                : 20,
                 'v_var'            : var_bits,
                 'probCrossOver'    : 0.9,
                 'probMutation'     : 0.2,
                 'f_deco'           : DecoDecimal,
                 'f_fitness'        : f_fitness,
-                'maxGens'          : 1,
+                'maxGens'          : 10,
                 'debugLvl'         : 3,
     }
 
@@ -108,4 +105,5 @@ def DecoDecimal(v, a=var_min, b=var_max):
 
 
 if __name__ == "__main__":
-    cProfile.run("main()")
+    main()
+    #cProfile.run("main()")

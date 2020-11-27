@@ -29,7 +29,7 @@ def main():
     psi = np.flip(-np.linspace(0.20, 0.40, num=nvent))
     a = 0.4
     delta = 1
-    umbral = 0.9
+    umbral = 0.8
     sigma = 30 # en minutos
 
     # Parametros (usan variables definidas arriba)

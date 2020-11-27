@@ -1,6 +1,7 @@
 import numpy as np
 from Evolutivo.DNA import DNA
 from Evolutivo.debug import dbg
+from tqdm import tqdm
 
 #Los agentes (DNA) pueden ser cualquier objeto que necesita:
     #En caso de ser genético:
@@ -30,6 +31,8 @@ class GA:
         self.maxGens = maxGens
         self.debugLvl = debugLvl
 
+        self.bestFitness = -9999
+
         self.population = []
 
         self.Initialize(v_var)
@@ -55,12 +58,16 @@ class GA:
         bestFitnessPrev = -9999
 
         #Itero tantas veces como generaciones maximas
-        for _i in range(self.maxGens):
+        for _i in tqdm(range(self.maxGens)):
             #Poblacion nueva, me voy guardando los nuevos agentes
             newPopulation = []
 
             #Evaluo poblacion actual y me guardo los fitness y el mejor
             (v_fitness, bestFitnessActual) = self.EvaluatePopulation()
+
+            # Guardamos el mejor fitness si es mejor
+            if bestFitnessActual > self.bestFitness:
+                self.bestFitness = bestFitnessActual
 
             #El mejor agente de esta poblacion
             bestAgent = self.population[np.argmax(v_fitness)]

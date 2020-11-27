@@ -223,7 +223,6 @@ def PrLogisticaOpt(a, d, phi, psi, t_actual, t, estudioAcum_cs, estudioAcum_ss):
 
     sum_phi = np.dot(phi, np.log(1+c))
     sum_psi = np.dot(psi, np.log(1+s))
-
     #print(f"C: {c}")
     #print(f"S: {s}")
 
@@ -268,3 +267,23 @@ def plotLogisticaOpt(ax, a, d, phi, psi, ts_rev, acum_cs, acum_ss):
     #Grafica de probabilidad
     ax.plot(t, pr_vector_opt)
     ax.vlines(ts_rev, ymin=0, ymax=1, color='r', linestyle='dotted')
+
+def particionar(m, n, p, random=False):
+    (fils, cols) = m.shape
+    particiones = []
+
+    for _i in range(n):
+        # Idx contiene los indices de todas las filas
+        idx = np.arange(fils)
+        # Los mezclamos si random=True
+        if random:
+            np.random.shuffle(idx)
+        # Calculamos el numero de patrones de entrenamiento en base a `p`
+        Ne = int(np.floor(fils*p))
+        # Agregamos los indices al arreglo de particiones
+        idx_entr = idx[:Ne]
+        idx_prueba = idx[Ne:]
+
+        particiones.append((idx_entr, idx_prueba))
+
+    return particiones
