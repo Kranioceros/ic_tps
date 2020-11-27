@@ -17,7 +17,7 @@ class Uniforme(SRS):
         self.t = t
 
     def prox_revision(self, _delta, _sched, t_ult_rev):
-        return t_ult_rev + self.t
+        return (t_ult_rev + self.t,1)
 
 class SRGA(SRS):
     # pylint: disable=unsubscriptable-object, unused-variable
