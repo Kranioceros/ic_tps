@@ -8,7 +8,7 @@ class SRS:
         pass
 
     # Devuelve una tupla (estado, t_revision)
-    def prox_revision(self, delta, sched, t_ult_rev):
+    def prox_revision(self, sched, t_ult_rev):
         print('Algo esta muy mal con tu SRS')
         return None
 
@@ -16,19 +16,20 @@ class Uniforme(SRS):
     def __init__(self, t):
         self.t = t
 
-    def prox_revision(self, _delta, _sched, t_ult_rev):
+    def prox_revision(self, _sched, t_ult_rev):
         return (t_ult_rev + self.t,1)
 
 class SRGA(SRS):
     # pylint: disable=unsubscriptable-object, unused-variable
     m_acum_cs = None
     m_acum_ss = None
+    m_deltas  = None
 
     @classmethod
     # Recibe la resolucion `res` con la cual se calculan las funciones acumuladas
     # Recibe el sigma (en minutos) con el cual se calcula la densidad
     # Recibe cs y ss de todos los schedules
-    def init_class(cls, lens, m_t, m_c, m_s, res=1000, sigma=30):
+    def init_class(cls, lens, m_t, m_c, m_s, m_d, res=1000, sigma=30):
         from utils import integral_acumulada
         print("---INICIA init_acums---")
         # Nos fijamos si no calculamos previamente estos acumulados
@@ -57,6 +58,9 @@ class SRGA(SRS):
             np.save(c_path, cls.m_acum_cs)
             np.save(s_path, cls.m_acum_ss)
 
+        #nos traemos las dificultades del archivo generado
+        cls.m_deltas = m_d
+
 
     def __init__(self, alfa0, phi0, psi0, umbral):
         self.alfa = alfa0
@@ -65,11 +69,12 @@ class SRGA(SRS):
         self.umbral = umbral
 
     # TODO: Usar el beta (dificultad del item en cuestion)
-    def prox_revision(self, delta, sched, t_ult_rev):
+    def prox_revision(self, sched, t_ult_rev):
         from utils import PrLogisticaOpt
 
         acum_cs = SRGA.m_acum_cs[sched]
         acum_ss = SRGA.m_acum_ss[sched]
+        delta   = SRGA.m_deltas[sched]
 
         idx_ult_rev = int(np.ceil(t_ult_rev * acum_cs.size / (15*24*3600)))
 

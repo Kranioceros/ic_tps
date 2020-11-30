@@ -11,6 +11,7 @@ def main():
     m_t = np.load('SRS/data/times.npy')
     m_c = np.load('SRS/data/correct.npy')
     m_s = np.load('SRS/data/seen.npy')
+    m_d = np.load('SRS/data/lexemes_dificulty.npy')
     lens = np.load('SRS/data/len_schedule.npy')
     lens = lens.astype(int)
 
@@ -47,7 +48,7 @@ def main():
     }
 
     # Inicializamos clase
-    SRGA.init_class(lens, m_t, m_c, m_s, res=res, sigma=sigma) # Sigma en minutos
+    SRGA.init_class(lens, m_t, m_c, m_s, m_d, res=res, sigma=sigma) # Sigma en minutos
     srga = SRGA(**srga_kwargs)
 
     # Lo probamos contra todos los schedules

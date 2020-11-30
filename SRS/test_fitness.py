@@ -10,6 +10,7 @@ def main():
     m_t = np.load('SRS/data/times.npy')
     m_c = np.load('SRS/data/correct.npy')
     m_s = np.load('SRS/data/seen.npy')
+    m_d = np.load('SRS/data/lexemes_dificulty.npy')
     lens = np.load('SRS/data/len_schedule.npy')
     lens = lens.astype(int)
 

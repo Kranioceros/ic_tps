@@ -70,13 +70,12 @@ def norm_estandar(x):
 
 # Devuelve (puntuacion, v_revisiones)
 def simil(ts, sched, srs: SRS, k=3):
-    delta = 1.0
 
     rs = np.zeros(ts.size)
     rs[0] = 0
     for i, rev_t in enumerate(ts[:-1]):
     #for i in range(rs.size-1):
-        (rs[i+1], _p) = srs.prox_revision(delta, sched, rev_t)
+        (rs[i+1], _p) = srs.prox_revision(sched, rev_t)
     
     #print(f"rs: {rs / 3600}")
     #print(f"ts: {ts / 3600}")
