@@ -1,0 +1,10 @@
+TODO:
+
+1. Probar uniforme con t = {1, 2, ... , 15}. Obtener fitness para comparar despues X
+2. Probar logaritmico? Probar SM2? Obtener fitness para comparar despues
+3. Obtener media y varianza de fitness para cada SRS *
+4. Usar algun tipo de particionado (K-fold, leave one out, etc.) X
+5. Box-plot *
+6. Hacer SRGA adaptativo! (cambiar alfa, phi y/o psi)
+7. Usar delta (dificultad de la pregunta)!
+8. Arreglar problema de elitismo...
