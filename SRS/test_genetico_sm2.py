@@ -1,23 +1,24 @@
 import numpy as np
 from Evolutivo.evolutivo import GA
-from srs import SRGA
+from srs import SM2
 from tqdm import tqdm
 from utils import fitness
 
 import cProfile
 
 n_bits = 30
+n_vars = 3
 
-# Alfa, Umbral, Phi(5), Psi(5)
-var_bits = np.ones(12, dtype=int) * 30
-var_lims = np.zeros(13, dtype=int)
-var_lims[:-1] = np.arange(0, 12) * var_bits
-var_lims[-1] = int(n_bits*12)
+# Alfa, Beta, Gamma
+var_bits = np.ones(n_vars, dtype=int) * 30
+var_lims = np.zeros(n_vars+1, dtype=int)
+var_lims[:-1] = np.arange(0, n_vars) * var_bits
+var_lims[-1] = int(n_bits*n_vars)
 var_min  = np.array(
-    [0, 0, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100]
+    [-1, -1, -1]
 )
 var_max  = np.array(
-    [1, 1, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    [1, 1, 1]
 )
 
 interrev = 1 * 24 * 3600
@@ -47,16 +48,15 @@ def main():
     lens = lens[rand_idx]
 
     # Inicializamos la clase SRGA, que preprocesa los datos si hace falta
-    SRGA.init_class(lens, m_t, m_c, m_s, m_d, res=1000)
+    SM2.init_class(lens, m_t, m_c, m_s, m_d)
 
     # Definimos la funcion de fitness a utilizar (depende de algunos datos cargados)
     def f_fitness(vars):
-        alfa0 = vars[0]
-        umbral = vars[1]
-        phi = vars[2:7]
-        psi = vars[7:]
+        alfa = vars[0]
+        beta = vars[1]
+        gamma = vars[2]
 
-        srga = SRGA(alfa0, phi, psi, umbral)
+        srga = SM2(alfa, beta, gamma)
 
         v_apts = np.zeros(n)
         scheds = np.random.choice(np.arange(0, N), size=n)
@@ -78,7 +78,7 @@ def main():
                 'probMutation'     : 0.2,
                 'f_deco'           : DecoDecimal,
                 'f_fitness'        : f_fitness,
-                'maxGens'          : 10,
+                'maxGens'          : 100,
                 'debugLvl'         : 3,
     }
 
