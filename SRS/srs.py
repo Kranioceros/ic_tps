@@ -23,8 +23,9 @@ class Uniforme(SRS):
 
 class SM2(SRS):
     def __init__(self, alfa, beta, gamma):
-        self.difficulty = None
-        self.hist_correct = 0
+        self.ef = 2.5
+        self.interval = 1
+        self.repetitions = 0
         self.alfa = alfa
         self.beta = beta
         self.gamma = gamma
@@ -41,36 +42,46 @@ class SM2(SRS):
 
     # Devuelve t_revision
     def prox_revision(self, sched, t_ult_rev):
+        # Calculamos tiempo de revision
         idx_ult_rev = int(np.ceil(t_ult_rev * SM2.m_c[sched,SM2.lens[sched]-1].size / (15*24*3600)))
-        dias = 24 * 3600
-        prox_rev = 0 #t_ult_rev
+        dt = 24 * 3600 # dias
+        # Obtenemos aciertos y totales
         correct = SM2.m_c[sched,idx_ult_rev]  
         total = SM2.m_s[sched,idx_ult_rev]
-        if self.difficulty is None: 
-            self.difficulty = SM2.m_d[sched]
-        
+
         # Calculamos performance (va entre 0 y 5)
-        performance = (correct / total * 5)
+        performance = np.floor((correct / total * 5))
+        #print(performance)
 
-        # Ajustamos dificultad
-        self.difficulty += self.alfa + self.beta * performance + self.gamma * performance ** 2
-
-        # Actualizamos numero de correctas consecutivas. Aca consideramos una
-        # performance de 3 como "correcto". Esto es para salvar la diferencia
-        # con SM2, que considera cada instancia de la palabra como una pregunta,
-        # mientras que nosotros trabajamos a nivel de la sesion
         if performance >= 3:
-            self.hist_correct += 1
-        else:
-            self.hist_correct = 0
+            # Ajustamos el intervalo de repeticion
+            if self.repetitions == 0:
+                self.interval = 1
+            elif self.repetitions == 1:
+                self.interval = 6
+            else:
+                self.interval *= self.ef
 
-        # Calculamos tiempo de proxima revision. 
-        if performance >= 3:
-            prox_rev += (6 * (self.difficulty ** (self.hist_correct - 1)) * dias)
-        else:
-            prox_rev += 1 * dias
+            self.interval = np.ceil(self.interval)
 
-        return (prox_rev,1)
+            # Incrementamos repeticiones
+            self.repetitions += 1
+            
+            # Ajustamos facilidad
+            #self.ef += (self.alfa - (5 - performance) * (self.beta + (5 - performance) * self.beta))
+            #self.ef += (0.1 - (5 - performance) * (0.08 + (5 - performance) * 0.02))
+            #self.ef += 0.02 * (4 - x) * (-10 + x)
+            self.ef += -0.8 + 0.28 * performance - 0.02 * performance**2
+        else:
+            self.interval = 1
+            self.repetitions = 0
+            # No ajustamos facilidad
+
+        # Mantenemos ef dentro de los margenes permitidos
+        if self.ef < 1.3:
+            self.ef = 1.3
+
+        return (t_ult_rev + self.interval*dt,1)
 
 
 class SRGA(SRS):
