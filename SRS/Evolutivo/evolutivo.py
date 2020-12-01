@@ -33,6 +33,7 @@ class GA:
         self.debugLvl = debugLvl
 
         self.bestFitness = -9999
+        self.v_bestFitness = []
 
         self.population = []
 
@@ -74,6 +75,8 @@ class GA:
             bestAgent = self.population[np.argmax(v_fitness)]
 
             best = self.f_deco(bestAgent.dna)
+
+            self.v_bestFitness.append(bestFitnessActual)
 
             dbg(f"Mejor agente generacion {_i+1}: {best}", 3, self.debugLvl)
             dbg(f"Mejor Fitness {_i+1}: {bestFitnessActual}", 3, self.debugLvl)

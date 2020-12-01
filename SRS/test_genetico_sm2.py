@@ -39,7 +39,7 @@ def main():
 
     # Cargamos unos pocos para que corra rapido 
     N = m_t.shape[0]
-    n = 50
+    n = 100
     rand_idx = np.arange(N)
     np.random.shuffle(rand_idx)
     m_t = m_t[rand_idx]
@@ -72,7 +72,7 @@ def main():
     
     # Definimos parametros a usar en el evolutivo
     evolutivo_kwargs = {
-                'N'                : 20,
+                'N'                : 30,
                 'v_var'            : var_bits,
                 'probCrossOver'    : 0.9,
                 'probMutation'     : 0.2,
@@ -85,7 +85,12 @@ def main():
     #Evolucionamos
     ga = GA(**evolutivo_kwargs)
     ga.Evolve(elitismo=True, brecha=0.4, convGen=100)
-    ga.DebugPopulation()
+    
+    print(f"MEDIA: {np.mean(ga.v_bestFitness)}")
+    print(f"STD: {np.std(ga.v_bestFitness)}")
+    print(f"MEDIANA: {np.median(ga.v_bestFitness)}")
+    print(f"MAX: {np.max(ga.v_bestFitness)}")
+    print(f"MIN: {np.min(ga.v_bestFitness)}")
 
 #Decodificador binario-decimal 
 # a y b son los limites inferior y superior para cada variable
