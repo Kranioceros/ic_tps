@@ -71,7 +71,7 @@ class SM2(SRS):
             #self.ef += (self.alfa - (5 - performance) * (self.beta + (5 - performance) * self.beta))
             #self.ef += (0.1 - (5 - performance) * (0.08 + (5 - performance) * 0.02))
             #self.ef += 0.02 * (4 - x) * (-10 + x)
-            self.ef += -0.8 + 0.28 * performance - 0.02 * performance**2
+            self.ef += self.alfa + self.beta * performance + self.gamma * performance**2
         else:
             self.interval = 1
             self.repetitions = 0

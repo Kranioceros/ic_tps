@@ -35,6 +35,9 @@ def main():
     lens = np.load('SRS/data/len_schedule.npy')
     lens = lens.astype(int)
 
+    #Cargamos los acums ("ASCO")
+    m_acum_cs = np.load('SRS/data/acum_c-res1000-sigma30.npy')
+    m_acum_ss = np.load('SRS/data/acum_s-res1000-sigma30.npy')
 
     # Cargamos unos pocos para que corra rapido 
     N = m_t.shape[0]
@@ -66,7 +69,8 @@ def main():
             if m_t[s,l-1] < interrev:
                 continue
 
-            v_apts[i] = fitness(s, m_t[s,:l], m_c[s,:l], m_s[s,:l], srs=srga)
+            #v_apts[i] = fitness(s, m_t[s,:l], m_c[s,:l], m_s[s,:l], srs=srga)
+            v_apts[i] = fitness(s, m_t[s,:l], m_acum_cs[s, -1], m_acum_ss[s, -1], srs=srga)
         
         return np.average(v_apts)
     
@@ -85,7 +89,12 @@ def main():
     #Evolucionamos
     ga = GA(**evolutivo_kwargs)
     ga.Evolve(elitismo=True, brecha=0.4, convGen=100)
-    ga.DebugPopulation()
+    
+    print(f"MEDIA: {np.mean(ga.v_bestFitness)}")
+    print(f"STD: {np.std(ga.v_bestFitness)}")
+    print(f"MEDIANA: {np.median(ga.v_bestFitness)}")
+    print(f"MAX: {np.max(ga.v_bestFitness)}")
+    print(f"MIN: {np.min(ga.v_bestFitness)}")
 
 #Decodificador binario-decimal 
 # a y b son los limites inferior y superior para cada variable

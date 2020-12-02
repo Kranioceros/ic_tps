@@ -36,10 +36,13 @@ def main():
     lens = np.load('SRS/data/len_schedule.npy')
     lens = lens.astype(int)
 
+    #Cargamos los acums ("ASCO")
+    m_acum_cs = np.load('SRS/data/acum_c-res1000-sigma30.npy')
+    m_acum_ss = np.load('SRS/data/acum_s-res1000-sigma30.npy')
 
     # Cargamos unos pocos para que corra rapido 
     N = m_t.shape[0]
-    n = 100
+    n = 50
     rand_idx = np.arange(N)
     np.random.shuffle(rand_idx)
     m_t = m_t[rand_idx]
@@ -56,8 +59,6 @@ def main():
         beta = vars[1]
         gamma = vars[2]
 
-        srga = SM2(alfa, beta, gamma)
-
         v_apts = np.zeros(n)
         scheds = np.random.choice(np.arange(0, N), size=n)
 
@@ -65,8 +66,9 @@ def main():
             l = lens[s]
             if m_t[s,l-1] < interrev:
                 continue
-
-            v_apts[i] = fitness(s, m_t[s,:l], m_c[s,:l], m_s[s,:l], srs=srga)
+            
+            srga = SM2(alfa, beta, gamma)
+            v_apts[i] = fitness(s, m_t[s,:l], m_acum_cs[s, -1], m_acum_ss[s, -1], srs=srga)
         
         return np.average(v_apts)
     
@@ -78,7 +80,7 @@ def main():
                 'probMutation'     : 0.2,
                 'f_deco'           : DecoDecimal,
                 'f_fitness'        : f_fitness,
-                'maxGens'          : 100,
+                'maxGens'          : 50,
                 'debugLvl'         : 3,
     }
 

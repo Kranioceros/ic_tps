@@ -34,26 +34,45 @@ def main():
     lens = np.load('SRS/data/len_schedule.npy')
     lens = lens.astype(int)
 
+    #Cargamos los acums ("ASCO")
+    m_acum_cs = np.load('SRS/data/acum_c-res1000-sigma30.npy')
+    m_acum_ss = np.load('SRS/data/acum_s-res1000-sigma30.npy')
+
     # NUMEROS MAGICOS
-    N = m_t.shape[0]
-    N_parts = 5
-    n = 10
+    N = m_t.shape[0]    #Cantidad total de schedules
+    n = 10              #Cantidad de schedules para cada individuo
 
     # Calculamos particiones
-    len_part = int(N / 5)
-    parts = []
+    N_parts = 5
+    prct_train = .8
+    len_part_train = int(N*prct_train / 5)
+
+    parts_train = []
+    parts_test = []
     idx = np.arange(0, N)
     np.random.shuffle(idx)
+
     for i in range(N_parts-1):
-        parts.append(idx[i*len_part:(i+1)*len_part])
-    parts.append(idx[(N_parts-1)*len_part:])
+        idxs_train = idx[i*len_part_train:(i+1)*len_part_train]
+        parts_train.append(idxs_train)
+        parts_test.append(list(set(idx)-set(idxs_train)))
+    idxs_train = idx[(N_parts-1)*len_part_train:]
+    parts_train.append(idxs_train)
+    parts_test.append(list(set(idx) - set(idxs_train)))
+
 
     # Inicializamos la clase SRGA, que preprocesa los datos si hace falta
     SRGA.init_class(lens, m_t, m_c, m_s, res=1000)
 
     mejores_fitnesses = []
+    part_alfa = []
+    part_phi = []
+    part_psi = []
+    part_umbral = []
 
-    for part in tqdm(parts):
+    #Usar particiones de entrenamiento
+    print("ENTRENAMIENTO....")
+    for i, part in tqdm(enumerate(parts_train)):
         # Definimos la funcion de fitness a utilizar (depende de algunos datos cargados)
         def f_fitness(vars):
             alfa0 = vars[0]
@@ -71,7 +90,7 @@ def main():
                 if m_t[s,l-1] < interrev:
                     continue
 
-                v_apts[i] = fitness(s, m_t[s,:l], m_c[s,:l], m_s[s,:l], srs=srga)
+                v_apts[i] = fitness(s, m_t[s,:l], m_acum_cs[s, -1], m_acum_ss[s, -1], srs=srga)
             
             return np.average(v_apts)
         
@@ -89,14 +108,51 @@ def main():
 
         #Evolucionamos
         ga = GA(**evolutivo_kwargs)
-        ga.Evolve(brecha=0)
+        ga.Evolve(elitismo=True, brecha=.4)
+        
         # Guardamos datos
+        bestAggent = ga.bestAggent
+        part_alfa.append(bestAggent[0])
+        part_umbral.append(bestAggent[1])
+        part_phi.append(bestAggent[2:7])
+        part_psi.append(bestAggent[7:])
         mejores_fitnesses.append(ga.bestFitness)
 
+        print(f"INFO PARTICION {i+1}:")
+        print(f"MEDIA: {np.mean(ga.v_bestFitness)}")
+        print(f"STD: {np.std(ga.v_bestFitness)}")
+        print(f"MEDIANA: {np.median(ga.v_bestFitness)}")
+        print(f"MAX: {np.max(ga.v_bestFitness)}")
+        print(f"MIN: {np.min(ga.v_bestFitness)}\n\n")
 
-    # Imprimimos los mejores fitnesses
-    print(f"Mejores fitnesses: {mejores_fitnesses}")
-    # Calcular media, varianza, boxplot...
+    # Imprimimos los mejores fitnesses del entrenamiento
+    print(f"Mejores fitnesses durante entrenamiento: {mejores_fitnesses}\n\n\n")
+
+    #Particiones de testeo
+    part_apts = []
+    part_apts_mean = []
+    part_apts_std = []
+
+    for i, part in tqdm(enumerate(parts_test)):
+
+        srga = SRGA(part_alfa[i], part_phi[i], part_psi[i], part_umbral[i])
+
+        v_apts = np.zeros(n)
+        scheds = np.random.choice(part, size=n)
+
+        for i, s in enumerate(scheds):
+            l = lens[s]
+            if m_t[s,l-1] < interrev:
+                continue
+
+            v_apts[i] = fitness(s, m_t[s,:l], m_acum_cs[s, -1], m_acum_ss[s, -1], srs=srga)
+                
+        part_apts.append(v_apts)
+        part_apts_mean.append(np.mean(v_apts))
+        part_apts_std.append(np.std(v_apts))
+
+
+    #TODO: graficar boxplot...
 
 #Decodificador binario-decimal 
 # a y b son los limites inferior y superior para cada variable

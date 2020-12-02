@@ -81,6 +81,7 @@ def simil(ts, sched, srs: SRS, k=3):
     #print(f"ts: {ts / 3600}")
     resta = np.abs(ts - rs)
     dist = np.sum(resta)
+    #print(f"rs: {rs / (24*3600)}")
     #print(f'resta: {resta / 3600}')
     #print(f'dist: {dist / 3600}')
     return (np.exp(-k*dist/ts.size), rs)
@@ -98,13 +99,18 @@ def bondad(ts, m, alfa=0.4, max_rev = 6*3600):
     #print(f't_n - t_(n-1): {ts[-1] - ts[ti]}')
     return (m[-1] * (ts[-1] - ts[ti])) ** alfa
 
-def fitness(sched, ts, cs, ss, srs: SRS, return_revs=False, interrev=3600*6,
+def fitness(sched, ts, acum_cs, acum_ss, srs: SRS, return_revs=False, interrev=3600*6,
     alfa=0.4, k=1/(3600*24)):
+
     (similitud, v_rev) = simil(ts, sched, srs, k)
-    #print(f'simil: {similitud}')
-    buenitud = bondad(ts, cs / ss, alfa=alfa, max_rev=interrev)
-    #print(f'bondad: {buenitud}')
+    
+    #buenitud = bondad(ts, cs / ss, alfa=alfa, max_rev=interrev)
+    buenitud = acum_cs / acum_ss
+
+    if(buenitud < 0.8):
+        buenitud = 0
     aptitud = buenitud * similitud
+
     if return_revs:
        return (v_rev, aptitud) 
     else:

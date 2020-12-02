@@ -34,6 +34,7 @@ class GA:
 
         self.bestFitness = -9999
         self.v_bestFitness = []
+        self.bestAgent = None
 
         self.population = []
 
@@ -73,6 +74,7 @@ class GA:
 
             #El mejor agente de esta poblacion
             bestAgent = self.population[np.argmax(v_fitness)]
+            self.bestAgent = bestAgent.dna
 
             best = self.f_deco(bestAgent.dna)
 
