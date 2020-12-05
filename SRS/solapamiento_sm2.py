@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, FuncFormatter, AutoMinorLocator)
 
 from tqdm import tqdm
-from utils import graficar, integral_acumulada, plotLogisticaOpt
+from utils import graficar, integral_acumulada, plotLogisticaOpt, simil
 from srs import SRS, SM2
 
 def main():
@@ -18,13 +18,10 @@ def main():
 
     ### Datos fijos ###
     sched = 800
-    res = 1000 # resolucion
     n = lens[sched]
     ts = m_t[sched,:n]
     cs = m_c[sched,:n]
     ss = m_s[sched,:n]
-
-    sigma = 30 # en minutos
 
     # Parametros (usan variables definidas arriba)
     sm2_kwargs = {
@@ -34,28 +31,24 @@ def main():
     }
 
     # Inicizalizamos clase
-    SM2.init_class(lens, m_t, m_c, m_s, m_d) # Sigma en minutos
+    SM2.init_class(lens, m_t, m_c, m_s, m_d)
     sm2 = SM2(**sm2_kwargs)
-
 
     ult_rev = 10
     # Calculamos tiempo para cierta revision
-    ts_sm2 = np.zeros(ts.size)
-    for i, t in enumerate(ts):
-        (ts_sm2[i], _p) = sm2.prox_revision(sched, t)
+    (similitud, ts_sm2) = simil(ts[0:ult_rev+1], sched, sm2, k=1/(3600*24))
 
     # Graficas
-    _fig, axs = plt.subplots(2,1)
+    _fig, axs = plt.subplots(1,1)
 
     #----- Format --------------
-    seg_dia = 24 * 60 * 60
-
-    graficar(axs[0], ts, cs, ss, ult_rev+1, dens=None, accum=None)
+    graficar(axs, ts, cs, ss, ult_rev+1, dens=None, accum=None)
     
-    axs[1].set_ylim(0, 1.1)
-    axs[1].xaxis.set_major_locator(MultipleLocator(seg_dia))
-    axs[1].xaxis.set_major_formatter(FuncFormatter(lambda x,_p: str(int(x/seg_dia))+'d'))
-    axs[1].vlines(ts_sm2, ymin=0, ymax=1, color='g')
+    axs.set_title('Calendario real y recomendaciones de SM2')
+    axs.set_xlabel('Días')
+    axs.vlines(ts_sm2[1:], ymin=0, ymax=1, color='g')
+
+    print(ts_sm2)
 
     plt.show()
 
