@@ -78,6 +78,10 @@ def main():
 
     plotLogisticaOpt(axs[1], **prlogistica_kwargs, ts_rev=ts[:2], acum_cs=acum_cs,
         acum_ss=acum_ss)
+    
+    axs[0].set_title('Decaimiento de probabilidad de retención')
+    axs[1].set_xlabel('Dias')
+    axs[1].set_ylabel('Probabilidad de retención')
 
     plt.show()
 

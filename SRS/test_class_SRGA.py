@@ -7,18 +7,17 @@ from utils import graficar, integral_acumulada, plotLogisticaOpt
 from srs import SRS, SRGA
 
 def main():
+ 
     # Cargamos datos
-    m_t = np.load('SRS/data/times.npy')[2020:2022]
-    m_c = np.load('SRS/data/correct.npy')[2020:2022]
-    m_s = np.load('SRS/data/seen.npy')[2020:2022]
-    m_d = np.load('SRS/data/lexemes_dificulty.npy')[2020:2022]
-    lens = np.load('SRS/data/len_schedule.npy')[2020:2022]
+    m_t = np.load('SRS/data/times.npy')
+    m_c = np.load('SRS/data/correct.npy')
+    m_s = np.load('SRS/data/seen.npy')
+    m_d = np.load('SRS/data/lexemes_dificulty.npy')
+    lens = np.load('SRS/data/len_schedule.npy')
     lens = lens.astype(int)
-    # Inicializamos grafica
-    _fig, axs = plt.subplots(3,2)
 
     ### Datos fijos ###
-    sched = 0
+    sched = 800
     res = 1000 # resolucion
     n = lens[sched]
     ts = m_t[sched,:n]
@@ -66,11 +65,13 @@ def main():
     }
 
     # Computamos acumuladas
-    ult_rev = 15
+    ult_rev = 10
     # Calculamos tiempo para cierta revision
     (t, p) = srga.prox_revision(sched, ts[ult_rev])
     print((t / 3600 / 24, p))
 
+    # Inicializamos grafica
+    _fig, axs = plt.subplots(3,2)
 
     graficar(axs[0, 0], ts, cs, ss, ult_rev+1, dens=None, accum=None)
     #axs[1, 0].plot(v_t, acum_cs)
@@ -81,7 +82,7 @@ def main():
     axs[2, 0].hlines(umbral, 0, 15*24*3600, linestyle='dashed', color='gray')
 
     # Computamos acumuladas
-    ult_rev = 25
+    ult_rev = 5
     # Calculamos tiempo para cierta revision
     (t, p) = srga.prox_revision(sched, ts[ult_rev])
     print((t / 3600 / 24, p))
